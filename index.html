@@ -38,21 +38,14 @@
         .room-count-tag { font-size: 0.7rem; background: #333; color: #fff; padding: 2px 8px; border-radius: 10px; border: 1px solid #555; }
         
         #target-display { font-family: 'Cinzel'; font-size: 2.5rem; color: var(--gold); line-height: 1; height: 2.8rem; display: flex; align-items: center; justify-content: center; }
-        .sequence-bar { font-size: 0.6rem; color: #888; background: #111; padding: 5px; border-radius: 20px; margin: 4px auto; width: 95%; display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+        .sequence-bar { font-size: 0.55rem; color: #888; background: #111; padding: 5px; border-radius: 20px; margin: 4px auto; width: 95%; display: flex; justify-content: center; gap: 3px; flex-wrap: wrap; }
         .seq-item.active { color: var(--gold); font-weight: 900; text-decoration: underline; transform: scale(1.1); }
 
         /* 玩家網格 */
-        .player-grid { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 6px; 
-            padding: 8px; flex-shrink: 0; 
-        }
-        .p-box { 
-            background: rgba(255,255,255,0.05); border: 1px solid #333; 
-            border-radius: 10px; padding: 6px; height: 82px; text-align: center; 
-            display: flex; flex-direction: column; justify-content: center; position: relative; transition: 0.3s;
-        }
+        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; flex-shrink: 0; }
+        .p-box { background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 6px; height: 80px; text-align: center; display: flex; flex-direction: column; justify-content: center; position: relative; transition: 0.3s; }
         .p-box.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.15); }
-        .p-box.dead { opacity: 0.2; filter: grayscale(1); }
+        .p-box.dead { opacity: 0.2; filter: grayscale(1); border-color: #ff0000; }
         .p-emoji { font-size: 1.8rem; line-height: 1; }
         .p-name { font-size: 0.8rem; font-weight: 900; margin-top: 2px; }
         .p-bullet { font-size: 0.65rem; color: #ff4444; font-family: 'Cinzel'; font-weight: 900; }
@@ -66,18 +59,10 @@
         .card-scroll::-webkit-scrollbar { display: none; }
 
         /* 卡牌設計 */
-        .card { 
-            flex: 0 0 62px; height: 90px; background: white; color: black; border-radius: 8px; 
-            padding: 5px; display: flex; flex-direction: column; justify-content: space-between; 
-            font-weight: 900; cursor: pointer; border: 2px solid transparent; position: relative; transition: 0.2s;
-        }
+        .card { flex: 0 0 62px; height: 90px; background: white; color: black; border-radius: 8px; padding: 5px; display: flex; flex-direction: column; justify-content: space-between; font-weight: 900; cursor: pointer; border: 2px solid transparent; position: relative; transition: 0.2s; }
         .card.red { color: #d40000; }
         .card.selected { border-color: var(--gold); transform: translateY(-12px); box-shadow: 0 0 12px var(--gold); }
-        .card.devil { 
-            border: 3px solid #ff0000 !important; 
-            box-shadow: 0 0 15px #ff0000;
-            animation: devil-glow 0.8s infinite alternate;
-        }
+        .card.devil { border: 3px solid #ff0000 !important; box-shadow: 0 0 15px #ff0000; animation: devil-glow 0.8s infinite alternate; }
         @keyframes devil-glow { from { box-shadow: 0 0 5px #ff0000; } to { box-shadow: 0 0 20px #ff0000; } }
 
         .btn-group { display: flex; gap: 8px; padding: 5px 0; }
@@ -89,10 +74,7 @@
         .mini-btn { background: #222; color: #888; border: 1px solid #444; padding: 6px 10px; border-radius: 5px; font-size: 0.6rem; cursor: pointer; }
 
         /* --- 處決動畫層 --- */
-        #execution-overlay { 
-            display: none; position: fixed; inset: 0; background: #000; z-index: 2000; 
-            flex-direction: column; justify-content: center; align-items: center; 
-        }
+        #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
         .blood-vignette { position: absolute; inset: 0; background: radial-gradient(circle, transparent 20%, rgba(139,0,0,0.8) 100%); opacity: 0; pointer-events: none; }
         .aim-ui { width: 120px; height: 120px; border: 2px solid red; border-radius: 50%; position: relative; animation: pulse 0.5s infinite; }
         .aim-ui::before { content: ''; position: absolute; width: 100%; height: 2px; top: 50%; left: 0; background: red; }
@@ -107,21 +89,21 @@
         <h1 style="color:var(--gold); font-family:'Cinzel'; margin-bottom:5px;">LIAR'S BAR</h1>
         <p style="font-size:0.8rem; color:#aaa;">ROYAL PROFESSIONAL EDITION</p>
         <div id="role-grid" class="role-grid"></div>
-        <div style="margin-top:20px; color:var(--gold); font-weight:bold;">請選擇您的角色</div>
+        <div style="margin-top:20px; color:var(--gold); font-weight:bold;">請選擇您的角色進入房間</div>
     </div>
 
     <!-- 遊戲介面 -->
     <div id="game-screen" class="game-screen">
         <div class="header-panel">
             <div class="info-row">
-                <div id="my-id-label" class="my-identity-tag">身份：載入中...</div>
+                <div id="my-id-label" class="my-identity-tag">身分：載入中...</div>
                 <div id="room-count-label" class="room-count-tag">房間人數：0</div>
             </div>
             <div id="target-display">?</div>
             <div class="sequence-bar" id="sequence-bar">等待開局...</div>
             <div class="control-row">
                 <button class="mini-btn" onclick="confirmReset('GAME')">🔄 重新開局</button>
-                <button class="mini-btn" onclick="confirmReset('DEAL')">🃏 重新發牌</button>
+                <button class="mini-btn" onclick="confirmReset('DEAL')">🃏 手動洗牌</button>
             </div>
         </div>
 
@@ -135,7 +117,6 @@
                 <button id="btn-liar" class="action-btn btn-liar" onclick="callLiar()">LIAR!</button>
                 <button id="btn-play" class="action-btn btn-play" onclick="playCards()">出牌 (0)</button>
             </div>
-            <!-- 每個人都能看到的開始按鈕 -->
             <button id="start-game-btn" class="action-btn btn-play" style="display:none; margin-bottom:10px; background: #fff; color: #000;" onclick="masterAction()">🎲 開始遊戲 (跑馬燈)</button>
         </div>
     </div>
@@ -149,7 +130,7 @@
     </div>
 
     <script>
-        // --- Firebase 配置 ---
+        // --- Firebase 配置 (請使用您自己的參數) ---
         const firebaseConfig = {
             apiKey: "AIzaSyA1FOVVQ2g9Empp9wisqa5JTzigVrifGVQ",
             authDomain: "liars-bar-game-13e0f.firebaseapp.com",
@@ -183,7 +164,6 @@
             updateSetupUI(data);
             if(myIdx !== null) syncGame(data);
             
-            // 開始按鈕顯示邏輯
             const startBtn = document.getElementById('start-game-btn');
             const gameScreenDisplay = window.getComputedStyle(document.getElementById('game-screen')).display;
             if (gameScreenDisplay === 'flex' && data.state === 'WAITING_JOIN') {
@@ -197,12 +177,7 @@
             roomRef.set({
                 state: 'WAITING_JOIN',
                 players: ROLES.map(r => ({ ...r, isTaken: false, isJoined: false, isDead: true, bulletIdx: 0, chamber: [], hand: [] })),
-                targetCard: '?',
-                currentTurn: -1,
-                lastPlayer: -1,
-                lastPlayed: [],
-                starterIdx: -1,
-                log: '等待玩家加入房間...'
+                targetCard: '?', currentTurn: -1, lastPlayer: -1, lastPlayed: [], starterIdx: -1, log: '等待玩家加入房間...'
             });
         }
 
@@ -237,65 +212,64 @@
 
         function confirmReset(type) {
             if(confirm(`確定要${type === 'GAME' ? '重新開局(回選角)' : '重新發牌'}嗎？`)) {
-                if(type === 'GAME') { 
-                    myIdx = null; 
-                    document.getElementById('setup-screen').style.display='flex'; 
-                    document.getElementById('game-screen').style.display='none'; 
-                    initRoom(); 
-                } else {
-                    masterAction();
-                }
+                if(type === 'GAME') { myIdx = null; document.getElementById('setup-screen').style.display='flex'; document.getElementById('game-screen').style.display='none'; initRoom(); }
+                else masterAction();
             }
         }
 
+        // --- 核心邏輯：洗牌與發牌 (回合開始) ---
         function masterAction() {
             roomRef.once('value', s => {
                 const data = s.val();
-                const joined = data.players.filter(p => p.isJoined);
-                if(joined.length < 2) { alert("房間人數不足 2 人，無法開始遊戲！"); return; }
+                const joined = data.players.filter(p => p.isJoined && !p.isDead); // 只給活人發牌
+                if(joined.length < 2) { 
+                    const allJoined = data.players.filter(p => p.isJoined);
+                    if(allJoined.length < 2) { alert("房間人數不足 2 人！"); return; }
+                }
 
-                roomRef.update({ state: 'ANIMATING', log: '系統正在隨機選牌...' });
+                roomRef.update({ state: 'ANIMATING', log: '戰場重整，正在隨機選牌...' });
                 
                 setTimeout(() => {
                     const targets = ['Q','K','A'];
                     const target = targets[Math.floor(Math.random()*3)];
-                    const n = joined.length;
                     
+                    // 固定牌組規則：6Q, 6K, 6A, 2J
                     let deck = [];
-                    const perType = Math.ceil(n * 1.5);
                     ['Q','K','A'].forEach(v => {
-                        for(let i=0; i<perType; i++) deck.push({ v, s: SUITS[i%4], isDevil: false });
+                        for(let i=0; i<6; i++) deck.push({ v, s: SUITS[i%4], isDevil: false });
                     });
-                    const jokerCount = Math.max(2, Math.floor(n * 0.5));
-                    for(let i=0; i<jokerCount; i++) deck.push({ v: 'J', s: '🃏', isDevil: false });
+                    for(let i=0; i<2; i++) deck.push({ v: 'J', s: '🃏', isDevil: false });
 
+                    // 隨機魔鬼牌
                     let qkaIndices = deck.map((c,i) => c.v !== 'J' ? i : -1).filter(i=>i!==-1);
                     deck[qkaIndices[Math.floor(Math.random()*qkaIndices.length)]].isDevil = true;
                     deck = deck.sort(() => Math.random() - 0.5);
 
-                    // 決定先手
-                    const activeIndices = data.players.map((p,i) => p.isJoined ? i : -1).filter(i=>i!==-1);
-                    const starter = activeIndices[Math.floor(Math.random()*activeIndices.length)];
+                    // 決定起始玩家 (必須是活著的人)
+                    const aliveIndices = data.players.map((p,i) => (p.isJoined && !p.isDead) ? i : -1).filter(i=>i!==-1);
+                    const starter = aliveIndices[Math.floor(Math.random()*aliveIndices.length)];
 
                     data.players.forEach((p, i) => {
-                        if(p.isJoined) {
+                        if(p.isJoined && !p.isDead) {
                             p.hand = deck.splice(0, 5);
-                            p.chamber = [0,0,0,0,0,0];
-                            p.chamber[Math.floor(Math.random()*6)] = 1;
-                            p.bulletIdx = 0;
-                            p.isDead = false;
+                            // bulletIdx 與 chamber 維持現狀，除非是新開局
+                            if(p.chamber.length === 0) {
+                                p.chamber = [0,0,0,0,0,0];
+                                p.chamber[Math.floor(Math.random()*6)] = 1;
+                                p.bulletIdx = 0;
+                            }
                         } else {
-                            p.hand = []; p.isDead = true;
+                            p.hand = [];
                         }
                     });
 
                     data.state = 'PLAYING';
                     data.targetCard = target;
                     data.currentTurn = starter;
-                    data.starterIdx = starter;
+                    data.starterIdx = starter; // 用於計算順序條
                     data.lastPlayer = -1;
                     data.lastPlayed = [];
-                    data.log = `由 ${ROLES[starter].name} 先出牌，Table 是 ${target}`;
+                    data.log = `回合重整！由 ${ROLES[starter].name} 先出牌，Table 是 ${target}`;
                     roomRef.set(data);
                 }, 2000);
             });
@@ -314,15 +288,6 @@
             document.getElementById('sys-msg').innerText = data.log;
             document.getElementById('stack-msg').innerText = `上家出了 ${data.lastPlayed ? data.lastPlayed.length : 0} 張牌`;
 
-            // 如果當前玩家死了，自動跳到下一位 (防止卡死)
-            if (data.state === 'PLAYING' && data.currentTurn !== -1 && data.players[data.currentTurn].isDead) {
-                const nextAlive = getNextAlive(data.players, data.currentTurn);
-                if (nextAlive !== data.currentTurn) {
-                    roomRef.child('currentTurn').set(nextAlive);
-                }
-            }
-
-            // 順序條 (固定狐狸>豹子>樹懶>斑馬>熊熊>野狼順序循環)
             if(data.starterIdx !== -1) {
                 let seq = [];
                 for(let i=0; i<6; i++) {
@@ -336,7 +301,6 @@
                 document.getElementById('sequence-bar').innerHTML = seq.join(' → ');
             }
 
-            // 玩家網格
             const grid = document.getElementById('player-grid');
             grid.innerHTML = '';
             data.players.forEach((p, i) => {
@@ -347,7 +311,6 @@
                 grid.appendChild(div);
             });
 
-            // 手牌
             const me = data.players[myIdx];
             const handDiv = document.getElementById('my-hand');
             handDiv.innerHTML = '';
@@ -375,9 +338,7 @@
             if(data.shooting && !isProcessingAnimation) runExecutionSequence(data.shooting);
 
             const myTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
-            const othersEmpty = data.players.every((p, i) => 
-                i === myIdx || !p.isJoined || p.isDead || (p.hand && p.hand.length === 0)
-            );
+            const othersEmpty = data.players.every((p, i) => i === myIdx || !p.isJoined || p.isDead || (p.hand && p.hand.length === 0));
 
             if (myTurn && othersEmpty && data.lastPlayer !== -1) {
                 document.getElementById('btn-play').disabled = true;
@@ -387,7 +348,6 @@
                 document.getElementById('btn-play').disabled = !myTurn;
                 document.getElementById('btn-play').style.opacity = myTurn ? "1" : "0.5";
             }
-            
             document.getElementById('btn-liar').disabled = (!myTurn || data.lastPlayer === -1);
         }
 
@@ -422,11 +382,9 @@
                 if(!d) return;
                 const firstJoinedIdx = d.players.findIndex(p => p.isJoined);
                 if(myIdx === firstJoinedIdx) {
-                    // 清除開槍狀態
                     roomRef.child('shooting').remove();
-                    // 關鍵：開槍結束後，如果原本該出牌的人死了，立刻跳轉到下一個活人
-                    const nextAlive = getNextAlive(d.players, d.currentTurn);
-                    roomRef.child('currentTurn').set(nextAlive);
+                    // --- 重大改動：開槍後自動開始新回合 ---
+                    setTimeout(() => masterAction(), 500); 
                 }
                 checkWinner(d);
             });
@@ -455,9 +413,7 @@
                 const target = data.targetCard;
                 const isLie = cards.some(c => c.v !== target && c.v !== 'J' && !c.isDevil);
                 const hasDevil = cards.some(c => c.isDevil);
-                
                 let victims = hasDevil ? data.players.map((p,i)=>i).filter(i => data.players[i].isJoined && i !== data.lastPlayer && !data.players[i].isDead) : (isLie ? [data.lastPlayer] : [myIdx]);
-                
                 const results = {};
                 victims.forEach(v => {
                     const p = data.players[v];
@@ -466,7 +422,6 @@
                     p.bulletIdx++;
                     if(hit) p.isDead = true;
                 });
-                
                 data.shooting = { victims, results };
                 data.log = hasDevil ? "🔥 翻開魔鬼牌！全員處決！" : (isLie ? "🤥 抓到吹牛！" : "✅ 真話！質疑者受審");
                 roomRef.set(data);
@@ -476,7 +431,6 @@
         function getNextAlive(players, current) {
             let next = (current + 1) % 6;
             let count = 0;
-            // 尋找下一個：1.已加入 2.還活著 的玩家
             while((!players[next].isJoined || players[next].isDead) && count < 7) {
                 next = (next + 1) % 6;
                 count++;
