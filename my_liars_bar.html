@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Liar's Bar Royal - Professional Edition</title>
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Noto+Sans+TC:wght@500;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --gold: #d4af37; --crimson: #8b0000; --bg: #050506; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
+        
+        body { 
+            background: var(--bg); color: white; font-family: 'Noto Sans TC', sans-serif; 
+            margin: 0; overflow: hidden; height: 100vh; height: 100dvh; 
+            display: flex; flex-direction: column;
+        }
+
+        /* --- 角色選擇畫面 --- */
+        .setup-screen { padding: 20px; text-align: center; flex: 1; display: flex; flex-direction: column; align-items: center; background: radial-gradient(circle at center, #1a1a1c 0%, #050506 100%); }
+        .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 400px; margin-top: 20px; }
+        .role-btn { 
+            background: #2a2a2c; border: 1px solid #444; color: white; 
+            padding: 15px; border-radius: 12px; font-size: 1rem; cursor: pointer; transition: 0.3s;
+            font-weight: bold;
+        }
+        .role-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .role-btn.taken { border-color: #ff0000; color: #777; background: #111; }
+
+        /* --- 遊戲主畫面佈局 --- */
+        .game-screen { display: none; flex-direction: column; height: 100vh; height: 100dvh; }
+        
+        .header-panel { padding: 8px; background: #000; border-bottom: 1px solid #333; text-align: center; flex-shrink: 0; position: relative; }
+        .info-row { display: flex; justify-content: center; gap: 8px; align-items: center; margin-bottom: 4px; }
+        .my-identity-tag { font-size: 0.7rem; background: var(--gold); color: black; padding: 2px 8px; border-radius: 10px; font-weight: 900; }
+        .room-count-tag { font-size: 0.7rem; background: #333; color: #fff; padding: 2px 8px; border-radius: 10px; border: 1px solid #555; }
+        
+        #target-display { font-family: 'Cinzel'; font-size: 2.5rem; color: var(--gold); line-height: 1; height: 2.8rem; display: flex; align-items: center; justify-content: center; }
+        .sequence-bar { font-size: 0.65rem; color: #888; background: #111; padding: 5px; border-radius: 20px; margin: 4px auto; width: 95%; display: flex; justify-content: center; gap: 5px; }
+        .seq-item.active { color: var(--gold); font-weight: 900; text-decoration: underline; transform: scale(1.1); }
+
+        /* 玩家網格 */
+        .player-grid { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 6px; 
+            padding: 8px; flex-shrink: 0; 
+        }
+        .p-box { 
+            background: rgba(255,255,255,0.05); border: 1px solid #333; 
+            border-radius: 10px; padding: 6px; height: 82px; text-align: center; 
+            display: flex; flex-direction: column; justify-content: center; position: relative; transition: 0.3s;
+        }
+        .p-box.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.15); }
+        .p-box.dead { opacity: 0.2; filter: grayscale(1); }
+        .p-emoji { font-size: 1.8rem; line-height: 1; }
+        .p-name { font-size: 0.8rem; font-weight: 900; margin-top: 2px; }
+        .p-bullet { font-size: 0.65rem; color: #ff4444; font-family: 'Cinzel'; font-weight: 900; }
+
+        .msg-area { height: 1.2rem; font-size: 0.75rem; color: #aaa; text-align: center; margin: 2px 0; }
+
+        /* 手牌區 */
+        #hand-area { background: #111; padding: 10px; border-radius: 20px 20px 0 0; display: flex; flex-direction: column; flex: 1; min-height: 0; }
+        .stack-info { text-align: center; color: var(--gold); font-size: 0.8rem; font-weight: bold; margin-bottom: 5px; }
+        .card-scroll { display: flex; overflow-x: auto; gap: 8px; padding: 10px 5px; flex: 1; align-items: center; scrollbar-width: none; }
+        .card-scroll::-webkit-scrollbar { display: none; }
+
+        /* 卡牌設計 */
+        .card { 
+            flex: 0 0 62px; height: 90px; background: white; color: black; border-radius: 8px; 
+            padding: 5px; display: flex; flex-direction: column; justify-content: space-between; 
+            font-weight: 900; cursor: pointer; border: 2px solid transparent; position: relative; transition: 0.2s;
+        }
+        .card.red { color: #d40000; }
+        .card.selected { border-color: var(--gold); transform: translateY(-12px); box-shadow: 0 0 12px var(--gold); }
+        .card.devil { 
+            border: 3px solid #ff0000 !important; 
+            box-shadow: 0 0 15px #ff0000;
+            animation: devil-glow 0.8s infinite alternate;
+        }
+        @keyframes devil-glow { from { box-shadow: 0 0 5px #ff0000; } to { box-shadow: 0 0 20px #ff0000; } }
+
+        .btn-group { display: flex; gap: 8px; padding: 5px 0; }
+        button.action-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-weight: 900; font-size: 1rem; cursor: pointer; }
+        .btn-play { background: var(--gold); color: black; }
+        .btn-liar { background: var(--crimson); color: white; }
+        
+        .control-row { display: flex; justify-content: space-around; gap: 5px; margin-top: 5px; }
+        .mini-btn { background: #222; color: #888; border: 1px solid #444; padding: 6px 10px; border-radius: 5px; font-size: 0.6rem; cursor: pointer; }
+
+        /* --- 處決動畫層 --- */
+        #execution-overlay { 
+            display: none; position: fixed; inset: 0; background: #000; z-index: 2000; 
+            flex-direction: column; justify-content: center; align-items: center; 
+        }
+        .blood-vignette { position: absolute; inset: 0; background: radial-gradient(circle, transparent 20%, rgba(139,0,0,0.8) 100%); opacity: 0; pointer-events: none; }
+        .aim-ui { width: 120px; height: 120px; border: 2px solid red; border-radius: 50%; position: relative; animation: pulse 0.5s infinite; }
+        .aim-ui::before { content: ''; position: absolute; width: 100%; height: 2px; top: 50%; left: 0; background: red; }
+        .aim-ui::after { content: ''; position: absolute; height: 100%; width: 2px; left: 50%; top: 0; background: red; }
+        @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+    </style>
+</head>
+<body>
+
+    <!-- 角色選擇 -->
+    <div id="setup-screen" class="setup-screen">
+        <h1 style="color:var(--gold); font-family:'Cinzel'; margin-bottom:5px;">LIAR'S BAR</h1>
+        <p style="font-size:0.8rem; color:#aaa;">ROYAL PROFESSIONAL EDITION</p>
+        <div id="role-grid" class="role-grid"></div>
+        <div style="margin-top:20px; color:var(--gold); font-weight:bold;">請選擇您的角色</div>
+    </div>
+
+    <!-- 遊戲介面 -->
+    <div id="game-screen" class="game-screen">
+        <div class="header-panel">
+            <div class="info-row">
+                <div id="my-id-label" class="my-identity-tag">身份：載入中...</div>
+                <div id="room-count-label" class="room-count-tag">房間人數：0</div>
+            </div>
+            <div id="target-display">?</div>
+            <div class="sequence-bar" id="sequence-bar">等待開局...</div>
+            <div class="control-row">
+                <button class="mini-btn" onclick="confirmReset('GAME')">🔄 重新開局</button>
+                <button class="mini-btn" onclick="confirmReset('DEAL')">🃏 重新發牌</button>
+            </div>
+        </div>
+
+        <div class="player-grid" id="player-grid"></div>
+        <div class="msg-area" id="sys-msg">系統訊息</div>
+
+        <div id="hand-area">
+            <div class="stack-info" id="stack-msg">上家出了 0 張牌</div>
+            <div class="card-scroll" id="my-hand"></div>
+            <div class="btn-group">
+                <button id="btn-liar" class="action-btn btn-liar" onclick="callLiar()">LIAR!</button>
+                <button id="btn-play" class="action-btn btn-play" onclick="playCards()">出牌 (0)</button>
+            </div>
+            <!-- 每個人都能看到的開始按鈕 -->
+            <button id="start-game-btn" class="action-btn btn-play" style="display:none; margin-bottom:10px; background: #fff; color: #000;" onclick="masterAction()">🎲 開始遊戲 (跑馬燈)</button>
+        </div>
+    </div>
+
+    <!-- 處決動畫 -->
+    <div id="execution-overlay">
+        <div class="blood-vignette" id="blood-vignette"></div>
+        <div id="exe-avatar" style="font-size: 6rem; margin-bottom: 20px;"></div>
+        <div class="aim-ui"></div>
+        <div id="exe-status" style="font-family:'Cinzel'; font-size: 2rem; margin-top: 20px; font-weight:900;">TARGETING...</div>
+    </div>
+
+    <script>
+        // --- Firebase 配置 (請確保使用您自己的參數) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA1FOVVQ2g9Empp9wisqa5JTzigVrifGVQ",
+            authDomain: "liars-bar-game-13e0f.firebaseapp.com",
+            databaseURL: "https://liars-bar-game-13e0f-default-rtdb.firebaseio.com",
+            projectId: "liars-bar-game-13e0f",
+            storageBucket: "liars-bar-game-13e0f.firebasestorage.app",
+            messagingSenderId: "526285952011",
+            appId: "1:526285952011:web:6e54c464a5d0af93c5630e"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const roomRef = db.ref('liars_bar_vfinal');
+
+        const ROLES = [
+            { id: 0, name: "狐狸", emoji: "🦊" },
+            { id: 1, name: "豹子", emoji: "🐆" },
+            { id: 2, name: "樹懶", emoji: "🦥" },
+            { id: 3, name: "斑馬", emoji: "🦓" },
+            { id: 4, name: "熊熊", emoji: "🐻" },
+            { id: 5, name: "野狼", emoji: "🐺" }
+        ];
+        const SUITS = ['♠','♥','♦','♣'];
+        
+        let myIdx = null;
+        let selectedIndices = [];
+        let isProcessingAnimation = false;
+
+        roomRef.on('value', snap => {
+            const data = snap.val();
+            if(!data) { initRoom(); return; }
+            updateSetupUI(data);
+            if(myIdx !== null) syncGame(data);
+            
+            // 獨立判定「開始按鈕」的可見性，不依賴 myIdx
+            const startBtn = document.getElementById('start-game-btn');
+            const gameScreenDisplay = window.getComputedStyle(document.getElementById('game-screen')).display;
+            if (gameScreenDisplay === 'flex' && data.state === 'WAITING_JOIN') {
+                startBtn.style.display = 'block';
+            } else {
+                startBtn.style.display = 'none';
+            }
+        });
+
+        function initRoom() {
+            roomRef.set({
+                state: 'WAITING_JOIN',
+                players: ROLES.map(r => ({ ...r, isTaken: false, isJoined: false, isDead: true, bulletIdx: 0, chamber: [], hand: [] })),
+                targetCard: '?',
+                currentTurn: -1,
+                lastPlayer: -1,
+                lastPlayed: [],
+                starterIdx: -1,
+                log: '等待玩家加入房間...'
+            });
+        }
+
+        function updateSetupUI(data) {
+            const grid = document.getElementById('role-grid');
+            grid.innerHTML = '';
+            data.players.forEach((p, i) => {
+                const btn = document.createElement('button');
+                btn.className = `role-btn ${p.isTaken ? 'taken' : ''}`;
+                btn.disabled = (p.isTaken || myIdx !== null);
+                btn.innerText = p.isTaken ? `${p.emoji} ${p.name}\n(有人)` : `${p.emoji} ${p.name}`;
+                btn.onclick = () => tryJoin(i);
+                grid.appendChild(btn);
+            });
+        }
+
+        function tryJoin(idx) {
+            roomRef.child('players').child(idx).transaction((player) => {
+                if (player && player.isTaken) return;
+                return { ...player, isTaken: true, isJoined: true, isDead: false };
+            }, (error, committed) => {
+                if (committed) {
+                    myIdx = idx;
+                    document.getElementById('my-id-label').innerText = `身分：${ROLES[idx].emoji} ${ROLES[idx].name}`;
+                    document.getElementById('setup-screen').style.display = 'none';
+                    document.getElementById('game-screen').style.display = 'flex';
+                    roomRef.child('players').child(idx).child('isTaken').onDisconnect().set(false);
+                    roomRef.child('players').child(idx).child('isJoined').onDisconnect().set(false);
+                }
+            });
+        }
+
+        function confirmReset(type) {
+            if(confirm(`確定要${type === 'GAME' ? '重新開局(回選角)' : '重新發牌'}嗎？`)) {
+                if(type === 'GAME') { 
+                    myIdx = null; 
+                    document.getElementById('setup-screen').style.display='flex'; 
+                    document.getElementById('game-screen').style.display='none'; 
+                    initRoom(); 
+                } else {
+                    masterAction();
+                }
+            }
+        }
+
+        function masterAction() {
+            roomRef.once('value', s => {
+                const data = s.val();
+                const joined = data.players.filter(p => p.isJoined);
+                if(joined.length < 2) { alert("房間人數不足 2 人，無法開始遊戲！"); return; }
+
+                roomRef.update({ state: 'ANIMATING', log: '系統正在隨機選牌...' });
+                
+                setTimeout(() => {
+                    const targets = ['Q','K','A'];
+                    const target = targets[Math.floor(Math.random()*3)];
+                    const n = joined.length;
+                    
+                    let deck = [];
+                    const perType = Math.ceil(n * 1.5);
+                    ['Q','K','A'].forEach(v => {
+                        for(let i=0; i<perType; i++) deck.push({ v, s: SUITS[i%4], isDevil: false });
+                    });
+                    const jokerCount = Math.max(2, Math.floor(n * 0.5));
+                    for(let i=0; i<jokerCount; i++) deck.push({ v: 'J', s: '🃏', isDevil: false });
+
+                    let qkaIndices = deck.map((c,i) => c.v !== 'J' ? i : -1).filter(i=>i!==-1);
+                    deck[qkaIndices[Math.floor(Math.random()*qkaIndices.length)]].isDevil = true;
+                    deck = deck.sort(() => Math.random() - 0.5);
+
+                    const activeIndices = data.players.map((p,i) => p.isJoined ? i : -1).filter(i=>i!==-1);
+                    const starter = activeIndices[Math.floor(Math.random()*activeIndices.length)];
+
+                    data.players.forEach((p, i) => {
+                        if(p.isJoined) {
+                            p.hand = deck.splice(0, 5);
+                            p.chamber = [0,0,0,0,0,0];
+                            p.chamber[Math.floor(Math.random()*6)] = 1;
+                            p.bulletIdx = 0;
+                            p.isDead = false;
+                        } else {
+                            p.hand = []; p.isDead = true;
+                        }
+                    });
+
+                    data.state = 'PLAYING';
+                    data.targetCard = target;
+                    data.currentTurn = starter;
+                    data.starterIdx = starter;
+                    data.lastPlayer = -1;
+                    data.lastPlayed = [];
+                    data.log = `由 ${ROLES[starter].name} 先出牌，Table 是 ${target}`;
+                    roomRef.set(data);
+                }, 2000);
+            });
+        }
+
+        function syncGame(data) {
+            // 跑馬燈
+            if(data.state === 'ANIMATING') {
+                const ani = ['Q','K','A'];
+                document.getElementById('target-display').innerText = ani[Math.floor(Date.now()/100)%3];
+            } else {
+                document.getElementById('target-display').innerText = data.targetCard;
+            }
+
+            // 更新房間人數顯示
+            const joinedPlayers = data.players.filter(p => p.isJoined);
+            document.getElementById('room-count-label').innerText = `房間人數：${joinedPlayers.length}`;
+
+            document.getElementById('sys-msg').innerText = data.log;
+            document.getElementById('stack-msg').innerText = `上家出了 ${data.lastPlayed ? data.lastPlayed.length : 0} 張牌`;
+
+            // 順序條
+            if(data.starterIdx !== -1) {
+                let seq = [];
+                for(let i=0; i<6; i++) {
+                    let idx = (data.starterIdx + i) % 6;
+                    let p = data.players[idx];
+                    if(p.isJoined) {
+                        let cls = (data.currentTurn === idx) ? "class='seq-item active'" : "class='seq-item'";
+                        seq.push(`<span ${cls}>${p.name}</span>`);
+                    }
+                }
+                document.getElementById('sequence-bar').innerHTML = seq.join(' → ');
+            }
+
+            // 玩家網格
+            const grid = document.getElementById('player-grid');
+            grid.innerHTML = '';
+            data.players.forEach((p, i) => {
+                if(!p.isJoined) return;
+                const div = document.createElement('div');
+                div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`;
+                div.innerHTML = `<div class="p-emoji">${p.emoji}</div><div class="p-name">${p.name}</div><div class="p-bullet">${p.bulletIdx}/6</div>`;
+                grid.appendChild(div);
+            });
+
+            // 手牌渲染
+            const me = data.players[myIdx];
+            const handDiv = document.getElementById('my-hand');
+            handDiv.innerHTML = '';
+            if(me && me.hand && !me.isDead) {
+                me.hand.forEach((card, i) => {
+                    const isSelected = selectedIndices.includes(i);
+                    const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
+                    const cDiv = document.createElement('div');
+                    cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSelected?'selected':''}`;
+                    cDiv.innerHTML = `<div>${card.v}</div><div style="font-size:1.2rem; align-self:center;">${card.s}</div><div style="transform:rotate(180deg)">${card.v}</div>`;
+                    cDiv.onclick = () => {
+                        if(isSelected) selectedIndices = selectedIndices.filter(x => x !== i);
+                        else {
+                            if(card.isDevil && selectedIndices.length > 0) return;
+                            if(!card.isDevil && selectedIndices.some(idx => me.hand[idx].isDevil)) return;
+                            if(selectedIndices.length < 3) selectedIndices.push(i);
+                        }
+                        document.getElementById('btn-play').innerText = `出牌 (${selectedIndices.length})`;
+                        syncGame(data);
+                    }
+                    handDiv.appendChild(cDiv);
+                });
+            }
+
+            if(data.shooting && !isProcessingAnimation) runExecutionSequence(data.shooting);
+
+            // 強制質疑規則判定
+            const myTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
+            const othersEmpty = data.players.every((p, i) => 
+                i === myIdx || !p.isJoined || p.isDead || (p.hand && p.hand.length === 0)
+            );
+
+            if (myTurn && othersEmpty && data.lastPlayer !== -1) {
+                document.getElementById('btn-play').disabled = true;
+                document.getElementById('btn-play').style.opacity = "0.3";
+                document.getElementById('sys-msg').innerText = "其餘玩家已無手牌，你只能質疑上家！";
+            } else {
+                document.getElementById('btn-play').disabled = !myTurn;
+                document.getElementById('btn-play').style.opacity = myTurn ? "1" : "0.5";
+            }
+            
+            document.getElementById('btn-liar').disabled = (!myTurn || data.lastPlayer === -1);
+        }
+
+        async function runExecutionSequence(shootingObj) {
+            isProcessingAnimation = true;
+            const overlay = document.getElementById('execution-overlay');
+            overlay.style.display = 'flex';
+            for(let vIdx of shootingObj.victims) {
+                document.getElementById('exe-avatar').innerText = ROLES[vIdx].emoji;
+                document.getElementById('exe-status').innerText = "TARGETING...";
+                document.getElementById('exe-status').style.color = "white";
+                document.getElementById('blood-vignette').style.opacity = 0;
+                await new Promise(r => setTimeout(r, 1800));
+                if(shootingObj.results[vIdx]) {
+                    playGunshot();
+                    document.getElementById('exe-status').innerText = "ELIMINATED";
+                    document.getElementById('exe-status').style.color = "red";
+                    document.getElementById('blood-vignette').style.opacity = 1;
+                    await new Promise(r => setTimeout(r, 1500));
+                } else {
+                    playTone(400, 0.1);
+                    document.getElementById('exe-status').innerText = "SAFE";
+                    document.getElementById('exe-status').style.color = "lime";
+                    await new Promise(r => setTimeout(r, 1000));
+                }
+            }
+            overlay.style.display = 'none';
+            isProcessingAnimation = false;
+            
+            roomRef.once('value', s => {
+                const d = s.val();
+                if(!d) return;
+                const firstJoinedIdx = d.players.findIndex(p => p.isJoined);
+                if(myIdx === firstJoinedIdx) roomRef.child('shooting').remove();
+                checkWinner(d);
+            });
+        }
+
+        function playCards() {
+            if(selectedIndices.length === 0) return;
+            roomRef.once('value', s => {
+                const data = s.val();
+                const p = data.players[myIdx];
+                const played = [];
+                selectedIndices.sort((a,b)=>b-a).forEach(i => played.push(p.hand.splice(i,1)[0]));
+                data.lastPlayed = played;
+                data.lastPlayer = myIdx;
+                data.currentTurn = getNextAlive(data.players, myIdx);
+                data.log = `${ROLES[myIdx].name} 出了 ${played.length} 張牌`;
+                selectedIndices = [];
+                roomRef.set(data);
+            });
+        }
+
+        function callLiar() {
+            roomRef.once('value', s => {
+                const data = s.val();
+                const cards = data.lastPlayed;
+                const target = data.targetCard;
+                const isLie = cards.some(c => c.v !== target && c.v !== 'J' && !c.isDevil);
+                const hasDevil = cards.some(c => c.isDevil);
+                let victims = hasDevil ? data.players.map((p,i)=>i).filter(i => data.players[i].isJoined && i !== data.lastPlayer && !data.players[i].isDead) : (isLie ? [data.lastPlayer] : [myIdx]);
+                const results = {};
+                victims.forEach(v => {
+                    const p = data.players[v];
+                    const hit = p.chamber[p.bulletIdx] === 1;
+                    results[v] = hit;
+                    p.bulletIdx++;
+                    if(hit) p.isDead = true;
+                });
+                data.shooting = { victims, results };
+                data.log = hasDevil ? "🔥 魔鬼牌！全員處決！" : (isLie ? "🤥 抓到吹牛！" : "✅ 真話！質疑者受審");
+                roomRef.set(data);
+            });
+        }
+
+        function getNextAlive(players, current) {
+            let next = (current + 1) % 6;
+            while(!players[next].isJoined || players[next].isDead) next = (next + 1) % 6;
+            return next;
+        }
+
+        function checkWinner(data) {
+            const joined = data.players.filter(p => p.isJoined);
+            const alive = joined.filter(p => !p.isDead);
+            if(joined.length > 1 && alive.length === 1) alert(`🏆 贏家是 ${alive[0].name}！`);
+        }
+
+        function playTone(f, d) { try { const c=new AudioContext(); const o=c.createOscillator(); const g=c.createGain(); o.frequency.value=f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+d); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+d); } catch(e){} }
+        function playGunshot() { try { const c=new AudioContext(); const b=c.createBuffer(1, c.sampleRate, c.sampleRate); const d=b.getChannelData(0); for(let i=0; i<b.length; i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*0.05)); const s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(); } catch(e){} }
+    </script>
+</body>
+</html>
