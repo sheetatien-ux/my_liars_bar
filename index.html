@@ -50,12 +50,17 @@
         .p-box.dead { filter: grayscale(1) brightness(0.6); opacity: 0.7; border-color: #555; }
         .out-stamp { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); color: #ff0000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.6rem; transform: rotate(-15deg); border: 2px solid #ff0000; margin: 10px; border-radius: 5px; z-index: 5; }
 
-        /* --- 手牌佈局 (原地留白系統) --- */
+        /* --- 手牌佈局 --- */
         #hand-area { flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(to top, #000 80%, #0d0d0f 100%); border-top: 1.5px solid var(--gold); border-radius: 30px 30px 0 0; padding: 5px; position: relative; min-height: 0; }
         .card-container { flex: 1; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; overflow: visible; }
         .card { width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 10px; color: #111; font-weight: 900; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; position: absolute; left: 50%; bottom: 15px; margin-left: calc(var(--card-w) / -2); transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), bottom 0.4s, opacity 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid #ccc; z-index: 10; cursor: pointer; }
 
-        .card.selected { bottom: 140px !important; transform: rotate(0deg) scale(1.25) !important; z-index: 500 !important; border: 3px solid var(--gold); box-shadow: 0 20px 50px rgba(212, 175, 55, 0.7); filter: brightness(1.1); }
+        /* 選中卡片：上層水平大間距橫排 (修復重疊) */
+        .card.selected { 
+            bottom: 160px !important; transform: rotate(0deg) scale(1.25) !important;
+            z-index: 500 !important; border: 3px solid var(--gold); 
+            box-shadow: 0 20px 50px rgba(212, 175, 55, 0.7); filter: brightness(1.1); 
+        }
         .card.unfocused { opacity: 0.35; filter: grayscale(0.5); transform: scale(0.85); }
         .card.red { color: #d00; }
         .card.devil { border: 2.5px solid #f00 !important; animation: devil-pulse 1s infinite alternate; }
@@ -67,7 +72,7 @@
         .btn-play { background: var(--gold); color: #000; box-shadow: 0 4px 0 #8a6d3b; }
         .btn-liar { background: #8b0000; color: #fff; box-shadow: 0 4px 0 #400; }
 
-        /* --- 處決與準星 (SAFE 色彩修復) --- */
+        /* --- 處決 UI --- */
         #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
         .aim-ui { width: 220px; height: 220px; border: 4px solid #ff0000; border-radius: 50%; position: relative; box-shadow: 0 0 30px rgba(255,0,0,0.5); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .aim-ui::before, .aim-ui::after { content: ''; position: absolute; background: #ff0000; box-shadow: 0 0 5px #f00; transition: 0.3s; }
@@ -77,7 +82,6 @@
         .locking { animation: aim-lock 0.15s infinite alternate; border-color: #fff !important; }
         @keyframes aim-lock { from { transform: scale(1.1); } to { transform: scale(0.9); } }
 
-        /* SAFE 狀態強勢轉綠 */
         .safe-glow { border-color: #00ff00 !important; box-shadow: 0 0 50px #00ff00 !important; transform: scale(1.2); }
         .safe-glow::before, .safe-glow::after { background: #00ff00 !important; box-shadow: 0 0 10px #00ff00 !important; }
 
@@ -118,7 +122,7 @@
             <div id="target-display">?</div>
             <div class="sequence-bar" id="sequence-bar">Waiting...</div>
             <div style="display:flex; gap:10px; padding:2px 5px;">
-                <button class="main-btn" style="margin:0; flex:1; padding:5px; font-size:0.6rem; border-radius:8px;" onclick="confirmReset('GAME')">🔄 RESET</button>
+                <button class="main-btn" style="margin:0; flex:1; padding:4px; font-size:0.6rem; border-radius:8px;" onclick="confirmReset('GAME')">🔄 RESET</button>
                 <button class="main-btn" style="margin:0; flex:1; padding:4px; font-size:0.6rem; background:#444; color:#fff; border-radius:8px;" onclick="confirmReset('DEAL')">🃏 REDEAL</button>
             </div>
         </div>
@@ -157,9 +161,22 @@
         const ROLES = [{id:0,name:"FOX",emoji:"🦊"},{id:1,name:"LEOPARD",emoji:"🐆"},{id:2,name:"SLOTH",emoji:"🦥"},{id:3,name:"ZEBRA",emoji:"🦓"},{id:4,name:"BEAR",emoji:"🐻"},{id:5,name:"WOLF",emoji:"🐺"}];
         const SUITS = ['♠','♥','♦','♣'];
         let currentRoomId = null, myIdx = null, roomRef = null, selectedIndices = [], isAnimating = false;
-        const audio = { liar: () => playTone(600, 0.4), shot: () => playGunshot(), safe: () => playTone(440, 0.2), heartbeat: (rate) => playTone(55, 0.12, rate) };
+        const audio = { liar: () => playTone(600, 0.4), shot: () => playGunshot(), safe: () => playEmptyClick(), heartbeat: (rate) => playTone(55, 0.12, rate) };
 
         function playGunshot() { try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gT = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(180, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.15); gT.gain.setValueAtTime(1.8, ctx.currentTime); gT.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25); osc.connect(gT); gT.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.25); } catch(e){} }
+        
+        // 新增：寫實空槍咔噠聲
+        function playEmptyClick() {
+            try {
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                osc.type = 'sine'; osc.frequency.setValueAtTime(1200, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.05);
+            } catch(e){}
+        }
 
         async function handleRoomAction(action) {
             const rid = document.getElementById('input-room-id').value.trim().toUpperCase();
@@ -232,14 +249,12 @@
             if(data.state === 'LOBBY') return;
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
-            const myTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
-            document.getElementById('main-body').className = myTurn ? 'active-turn' : '';
-
+            const isMyTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
+            document.getElementById('main-body').className = isMyTurn ? 'active-turn' : '';
             if(data.state === 'ANIMATING') { document.getElementById('target-display').innerText = ['Q','K','A'][Math.floor(Date.now()/100)%3]; return; }
             document.getElementById('target-display').innerText = data.targetCard;
             document.getElementById('stack-msg').innerText = `TABLE: ${data.lastPlayed ? data.lastPlayed.length : 0} CARDS`;
             document.getElementById('btn-play').innerText = `PLAY (${selectedIndices.length})`;
-
             if(data.starterIdx !== -1) {
                 let seq = []; const joined = data.players.map((p,i)=>p.isJoined?i:-1).filter(i=>i!==-1);
                 for(let i=0; i<6; i++) {
@@ -249,7 +264,6 @@
                 }
                 document.getElementById('sequence-bar').innerHTML = seq.join(' ➔ ');
             }
-
             const grid = document.getElementById('player-grid'); grid.innerHTML = '';
             data.players.forEach((p, i) => { 
                 if(!p.isJoined) return; 
@@ -258,8 +272,6 @@
                 if(p.isDead) div.innerHTML += `<div class="out-stamp">OUT</div>`;
                 grid.appendChild(div);
             });
-
-            // 手牌邏輯：原地留白
             const me = data.players[myIdx]; const handDiv = document.getElementById('my-hand'); handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
                 const total = 5; const hasSelected = selectedIndices.length > 0; const spacing = (handDiv.clientWidth < 420) ? 60 : 90;
@@ -268,9 +280,11 @@
                     const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSel?'selected':''} ${hasSelected && !isSel ? 'unfocused' : ''}`;
                     if (isSel) {
-                        const sOrder = selectedIndices.indexOf(i); const sCount = selectedIndices.length;
-                        const spreadX = (sOrder - (sCount - 1) / 2) * 110; 
-                        cDiv.style.transform = `translateX(${spreadX}px) rotate(0deg) scale(1.2)`;
+                        // 【關鍵修復：選中後水平橫向排開，間距 130px】
+                        const sOrder = selectedIndices.indexOf(i); 
+                        const sCount = selectedIndices.length;
+                        const spreadX = (sOrder - (sCount - 1) / 2) * 130; 
+                        cDiv.style.transform = `translateX(${spreadX}px) rotate(0deg) scale(1.25)`;
                         cDiv.style.bottom = "160px"; cDiv.style.zIndex = 1000 + sOrder;
                     } else {
                         const offsetX = (i - 2) * spacing; const rotate = (i - 2) * 10;
@@ -288,32 +302,19 @@
             if(data.shooting && !isAnimating) runExecutionSequence(data.shooting);
         }
 
-        // --- 修正：SAFE 動畫強勢轉綠 ---
         async function runExecutionSequence(shooting) {
             isAnimating = true; const overlay = document.getElementById('execution-overlay'); const aim = document.getElementById('aim-ui'); const status = document.getElementById('exe-status'); const blood = document.getElementById('blood-vignette');
             overlay.style.display = 'flex';
             for(let vIdx of shooting.victims) {
                 document.getElementById('exe-avatar').innerText = ROLES[vIdx].emoji;
-                
-                // 1. 初始對準 (清除樣式)
-                status.innerText = "TARGETING"; status.style.color = "white"; 
-                status.className = ""; aim.className = "aim-ui"; blood.style.opacity = 0; audio.heartbeat(0.4); await new Promise(r => setTimeout(r, 1000));
-                
-                // 2. 鎖定準備 (震動)
+                status.innerText = "TARGETING"; status.style.color = "white"; status.className = ""; aim.className = "aim-ui"; blood.style.opacity = 0; audio.heartbeat(0.4); await new Promise(r => setTimeout(r, 1000));
                 status.innerText = "LOCKING ON"; status.style.color = "yellow"; aim.classList.add('locking'); overlay.classList.add('shaking'); audio.heartbeat(1.2); await new Promise(r => setTimeout(r, 1200));
-                
-                // 3. 結果判定
                 if(shooting.results[vIdx]) {
-                    playGunshot(); status.innerText = "ELIMINATED"; status.className = "text-eliminated"; status.style.color = ""; // 清除 inline
-                    blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1800));
+                    playGunshot(); status.innerText = "ELIMINATED"; status.className = "text-eliminated"; status.style.color = ""; blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1800));
                 } else {
-                    overlay.classList.remove('shaking'); aim.classList.remove('locking');
-                    aim.classList.add('safe-glow'); // 圈圈與十字線變綠
-                    audio.safe(); 
-                    status.innerText = "S A F E"; 
-                    status.style.color = ""; // 清除 yellow 的 inline style
-                    status.className = "text-safe"; // 賦予綠色字體 Class
-                    await new Promise(r => setTimeout(r, 1500));
+                    overlay.classList.remove('shaking'); aim.classList.remove('locking'); aim.classList.add('safe-glow'); 
+                    audio.safe(); // 觸發清脆金屬聲
+                    status.innerText = "S A F E"; status.style.color = ""; status.className = "text-safe"; await new Promise(r => setTimeout(r, 1500));
                 }
                 aim.className = "aim-ui"; status.className = "";
             }
@@ -344,7 +345,7 @@
         }
         function getNextAlive(players, current) { let next = (current + 1) % 6; while(!players[next].isJoined || players[next].isDead) next = (next + 1) % 6; return next; }
         function confirmReset(type) { if(confirm(`Reset?`)) { if(type === 'GAME') { roomRef.update({ state: 'LOBBY', lastPlayed: [], shooting: null }); location.reload(); } else masterAction(); } }
-        function playTone(f, d, rate = 1) { try { const ctx = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d); o.connect(g); g.connect(c.destination); o.start(); o.stop(ctx.currentTime + d); } } catch(e){} }
+        function playTone(f, d, rate = 1) { try { const ctx = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + d); } } catch(e){} }
     </script>
 </body>
 </html>
