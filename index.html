@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Liar's Bar - Royal Final Platinum Edition</title>
-    <!-- Firebase SDK -->
+    <title>Liar's Bar - Royal Final Edition</title>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Noto+Sans+TC:wght@400;900&display=swap" rel="stylesheet">
@@ -13,7 +12,7 @@
             --gold: #d4af37; --gold-l: #f9e29f; --gold-d: #8a6d3b;
             --bg: #050505; --panel: rgba(20, 20, 25, 0.95);
             --border: rgba(212, 175, 55, 0.3);
-            --card-w: 82px; --card-h: 128px;
+            --card-w: 75px; --card-h: 115px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
@@ -24,76 +23,98 @@
 
         body::after { content: ""; position: fixed; inset: 0; opacity: 0.03; pointer-events: none; background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); }
 
-        /* --- 1. 登入介面 --- */
+        /* --- 1. 大廳介面 --- */
         .lobby-screen { position: fixed; inset: 0; z-index: 101; background: var(--bg); display: flex; align-items: center; justify-content: center; }
         .lobby-container { position: relative; background: var(--panel); border: 1px solid var(--gold); border-radius: 30px; padding: 40px 30px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8); backdrop-filter: blur(20px); }
         .lobby-logo { font-family: 'Cinzel'; font-size: 2.8rem; color: var(--gold); margin-bottom: 35px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5); letter-spacing: 4px; }
         .input-group { position: relative; margin-bottom: 25px; text-align: left; }
         .input-group label { display: block; font-family: 'Cinzel'; font-size: 0.75rem; color: var(--gold-l); margin-bottom: 8px; margin-left: 10px; }
         .lobby-input { width: 100%; padding: 15px 20px; background: #000; border: 1px solid #333; border-radius: 15px; color: var(--gold); font-family: 'Noto Sans TC'; font-size: 1.1rem; text-align: center; }
+        .lobby-input:focus { border-color: var(--gold); outline: none; }
         .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.2rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); margin-bottom: 10px; }
         .sub-btn { width: 100%; padding: 14px; background: transparent; border: 1px solid var(--border); border-radius: 15px; color: var(--gold-l); font-family: 'Cinzel'; cursor: pointer; }
 
         /* --- 2. 選角介面 --- */
         .setup-screen { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(15px); }
-        .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 420px; }
+        .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; }
         .role-card { background: linear-gradient(145deg, #1a1a20, #0a0a0c); border: 1px solid var(--border); border-radius: 20px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
         .role-card.taken { opacity: 0.2; filter: grayscale(1); cursor: not-allowed; }
-        .role-card.me { border: 2.5px solid var(--gold); box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); transform: scale(1.05); }
+        .role-card.me { border: 2px solid var(--gold); box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); transform: scale(1.05); }
+        .role-emoji { font-size: 2.5rem; display: block; margin-bottom: 8px; filter: drop-shadow(0 5px 10px #000); }
+        .role-name { font-family: 'Cinzel'; font-weight: 900; color: var(--gold-l); font-size: 0.8rem; }
 
-        /* --- 3. 遊戲畫面 --- */
+        /* --- 3. 遊戲畫面佈局 --- */
         .game-screen { display: none; flex-direction: column; height: 100dvh; }
         .my-turn-glow { position: fixed; inset: 0; pointer-events: none; z-index: 5; transition: 0.5s; }
         .active-turn .my-turn-glow { animation: border-breath 2s infinite alternate; }
-        @keyframes border-breath { from { box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.1); } to { box-shadow: inset 0 0 80px rgba(212, 175, 55, 0.5); } }
+        @keyframes border-breath { from { box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.1); } to { box-shadow: inset 0 0 70px rgba(212, 175, 55, 0.4); } }
 
-        .header-panel { padding: 12px; background: linear-gradient(to bottom, #000, transparent); text-align: center; border-bottom: 1px solid var(--border); }
-        #target-display { font-family: 'Cinzel'; font-size: 3.5rem; color: var(--gold); font-weight: 900; line-height: 1; text-shadow: 0 0 20px var(--gold-d); }
-        .sequence-bar { font-size: 0.65rem; color: #777; background: rgba(0,0,0,0.6); padding: 6px; border-radius: 30px; margin: 8px auto; width: 90%; display: flex; justify-content: center; gap: 10px; border: 1px solid var(--border); }
-        .seq-item.active { color: var(--gold-bright); font-weight: 900; text-shadow: 0 0 8px var(--gold); }
+        .header-panel { padding: 8px; background: linear-gradient(to bottom, #000, transparent); text-align: center; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+        #target-display { font-family: 'Cinzel'; font-size: 2.8rem; color: var(--gold); font-weight: 900; line-height: 1; margin-top: 5px; }
+        .sequence-bar { font-size: 0.6rem; color: #777; background: rgba(0,0,0,0.6); padding: 5px; border-radius: 30px; margin: 5px auto; width: 85%; display: flex; justify-content: center; gap: 8px; border: 1px solid var(--border); }
+        .seq-item.active { color: var(--gold-bright); font-weight: 900; text-shadow: 0 0 8px var(--gold); text-decoration: underline; }
 
-        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; flex-shrink: 0; }
-        .p-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 15px; padding: 12px; text-align: center; backdrop-filter: blur(5px); }
-        .p-box.active { border: 2.5px solid var(--gold); background: rgba(212, 175, 55, 0.1); }
+        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 10px; flex-shrink: 0; }
+        .p-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 8px; text-align: center; backdrop-filter: blur(5px); min-height: 70px; }
+        .p-box.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.08); }
+        .p-box.dead { opacity: 0.2; filter: grayscale(1); }
 
-        /* --- 關鍵：修正版手牌佈局 --- */
-        #hand-area { background: linear-gradient(to top, #000 85%, #0d0d0f 100%); padding: 10px; border-radius: 40px 40px 0 0; border-top: 2px solid var(--gold); flex: 1; display: flex; flex-direction: column; justify-content: flex-end; position: relative; overflow: hidden; }
-        .card-container { position: relative; width: 100%; height: 300px; display: flex; justify-content: center; align-items: flex-end; margin-bottom: 10px; }
-        
+        /* --- 核心：物理鎖定手牌區 --- */
+        #hand-area { 
+            background: linear-gradient(to top, #000 85%, #0d0d0f 100%); 
+            padding: 10px; border-radius: 40px 40px 0 0; border-top: 2px solid var(--gold);
+            flex: 1; display: flex; flex-direction: column; justify-content: flex-end;
+            position: relative; overflow: visible; /* 允許牌飛出容器不被切掉 */
+        }
+        .card-container { 
+            position: relative; width: 100%; height: 260px; /* 拉高高度，確保選中的牌頭部可見 */
+            display: flex; justify-content: center; align-items: flex-end;
+            margin-bottom: 5px;
+        }
         .card { 
-            width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 12px; color: #111; font-weight: 900; padding: 10px; display: flex; flex-direction: column; justify-content: space-between;
-            position: absolute; left: 0; bottom: 0; /* JS 會計算精確 left 座標 */
-            transition: all 0.45s cubic-bezier(0.23, 1, 0.32, 1); box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid #ccc; z-index: 10; cursor: pointer;
+            width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 10px; 
+            color: #111; font-weight: 900; padding: 6px; display: flex; flex-direction: column; justify-content: space-between;
+            position: absolute; left: 50%; bottom: 15px; margin-left: calc(var(--card-w) / -2);
+            transition: transform 0.4s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6); border: 1px solid #ccc; z-index: 10; cursor: pointer;
         }
-        /* 選中卡片：上方水平排開，絕對不重疊 */
+        /* 被抽走的視覺狀態：往上移動，但不影響左右位置 */
         .card.selected { 
-            bottom: 155px !important; transform: rotate(0deg) scale(1.15) !important; z-index: 500 !important; 
-            border: 3.5px solid var(--gold); box-shadow: 0 25px 60px rgba(212, 175, 55, 0.8);
+            transform: translateY(-110px) rotate(0deg) scale(1.1) !important; 
+            z-index: 500 !important; border: 3px solid var(--gold); 
+            box-shadow: 0 20px 50px rgba(212, 175, 55, 0.7);
         }
-        .card.unfocused { opacity: 0.35; filter: grayscale(0.6) brightness(0.6); transform: scale(0.85) !important; }
+        .card.unfocused { opacity: 0.4; filter: grayscale(0.4); }
         .card.red { color: #d00; }
-        .card.devil { border: 3px solid #f00 !important; box-shadow: 0 0 25px #f00 !important; animation: devil-pulse 1s infinite alternate; }
-        @keyframes devil-pulse { from { box-shadow: 0 0 5px #f00; } to { box-shadow: 0 0 35px #f00; } }
-        .card-flying { transform: translateY(-1000px) scale(0) rotate(45deg) !important; opacity: 0 !important; }
+        .card.devil { border: 2.5px solid #f00 !important; animation: devil-pulse 1s infinite alternate; }
+        @keyframes devil-pulse { from { box-shadow: 0 0 5px #f00; } to { box-shadow: 0 0 30px #f00; } }
+        .card-flying { transform: translateY(-700px) scale(0) rotate(45deg) !important; opacity: 0 !important; }
 
-        .btn-group { display: flex; gap: 15px; padding: 15px; z-index: 600; }
-        .action-btn { flex: 1; padding: 18px; border-radius: 15px; border: none; font-weight: 900; font-size: 1.3rem; font-family: 'Cinzel'; cursor: pointer; }
-        .btn-play { background: var(--gold); color: #000; box-shadow: 0 5px 0 var(--gold-d); }
-        .btn-liar { background: #8b0000; color: #fff; box-shadow: 0 5px 0 #400; }
-        .btn-disabled { opacity: 0.2; pointer-events: none; filter: grayscale(1); }
+        .btn-group { display: flex; gap: 10px; padding: 10px; z-index: 100; flex-shrink: 0; }
+        .action-btn { flex: 1; padding: 16px; border-radius: 15px; border: none; font-weight: 900; font-size: 1.1rem; font-family: 'Cinzel'; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.5); }
+        .btn-play { background: var(--gold); color: #000; }
+        .btn-liar { background: #8b0000; color: #fff; }
+        .btn-disabled { opacity: 0.2; pointer-events: none; }
+
+        /* --- 手機適應性優化 --- */
+        @media (max-width: 400px) {
+            :root { --card-w: 65px; --card-h: 100px; }
+            .card-container { height: 230px; }
+            #target-display { font-size: 2.5rem; }
+            .role-grid { gap: 10px; }
+            .role-emoji { font-size: 2rem; }
+        }
 
         /* --- 處決 UI --- */
         #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
-        .aim-ui { width: 240px; height: 240px; border: 4px solid #f00; border-radius: 50%; position: relative; box-shadow: 0 0 30px rgba(255,0,0,0.5); }
+        .aim-ui { width: 220px; height: 220px; border: 4px solid #f00; border-radius: 50%; position: relative; box-shadow: 0 0 30px rgba(255,0,0,0.5); }
         .aim-ui::before, .aim-ui::after { content: ''; position: absolute; background: #f00; box-shadow: 0 0 5px red; }
         .aim-ui::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
         .aim-ui::after { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
         .locking { animation: aim-lock 0.2s infinite alternate; border-color: #fff !important; }
-        @keyframes aim-lock { from { transform: scale(1); } to { transform: scale(0.9); } }
-        .safe-glow { border-color: #00ff00 !important; box-shadow: 0 0 50px #00ff00 !important; transform: scale(1.2); opacity: 0; transition: 0.6s; }
+        @keyframes aim-lock { from { transform: scale(1.05); } to { transform: scale(0.95); } }
         .shaking { animation: shake 0.1s infinite; }
         @keyframes shake { 0% { transform: translate(0,0); } 50% { transform: translate(-3px, 3px); } 100% { transform: translate(3px, -3px); } }
-        #exe-status { font-family: 'Cinzel'; font-size: 2.8rem; margin-top: 40px; font-weight:900; letter-spacing:5px; }
     </style>
 </head>
 <body id="main-body">
@@ -113,27 +134,27 @@
     <div id="setup-screen" class="setup-screen" style="display:none;">
         <h2 style="color:var(--gold); font-family:'Cinzel'; margin-bottom:30px; letter-spacing:3px;">SELECT YOUR AVATAR</h2>
         <div id="role-grid" class="role-grid"></div>
-        <button class="main-btn" id="start-trigger-btn" style="display:none; max-width:350px; margin-top:40px; background:#fff; color:#000;" onclick="masterAction()">🎲 SHUFFLE & DEAL</button>
+        <button class="main-btn" id="start-trigger-btn" style="display:none; max-width:350px; margin-top:40px; background:#fff; color:#000;" onclick="masterAction()">🎲 Shuffle & Deal</button>
         <button class="sub-btn" style="border:none; color:#666;" onclick="location.reload()">Back to Lobby</button>
     </div>
 
     <div id="game-screen" class="game-screen">
         <div class="header-panel">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <div id="my-id-label" style="background:var(--gold); color:#000; padding:3px 12px; border-radius:20px; font-weight:900; font-size:0.8rem;">FOX</div>
-                <div id="room-tag" style="color:var(--gold-l); font-size:0.8rem; font-family:'Cinzel';">ROOM: --</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+                <div id="my-id-label" style="background:var(--gold); color:#000; padding:2px 10px; border-radius:20px; font-weight:900; font-size:0.75rem;">FOX</div>
+                <div id="room-tag" style="color:var(--gold-l); font-size:0.75rem; font-family:'Cinzel';">ROOM: --</div>
             </div>
             <div id="target-display">?</div>
             <div class="sequence-bar" id="sequence-bar">Waiting...</div>
             <div style="display:flex; gap:10px;">
-                <button class="sub-btn" style="margin:0; flex:1; padding:5px; font-size:0.65rem; border-color:#555;" onclick="confirmReset('GAME')">🔄 RESET ROLES</button>
-                <button class="sub-btn" style="margin:0; flex:1; padding:5px; font-size:0.65rem; background:rgba(255,255,255,0.1); border-color:#555;" onclick="confirmReset('DEAL')">🃏 REDEAL</button>
+                <button class="sub-btn" style="margin:0; flex:1; padding:6px; font-size:0.6rem; border-color:#555;" onclick="confirmReset('GAME')">🔄 RESET ROLES</button>
+                <button class="sub-btn" style="margin:0; flex:1; padding:5px; font-size:0.6rem; background:rgba(255,255,255,0.1); border-color:#555;" onclick="confirmReset('DEAL')">🃏 REDEAL</button>
             </div>
         </div>
         <div class="player-grid" id="player-grid"></div>
-        <div id="sys-msg" style="text-align:center; font-size:0.75rem; color:#aaa; font-style:italic; height:1.1rem;">System Ready...</div>
+        <div id="sys-msg" style="text-align:center; font-size:0.75rem; color:#aaa; font-style:italic; height:1rem;">System Ready...</div>
         <div id="hand-area">
-            <div id="stack-msg" style="text-align:center; color:var(--gold); font-size:1rem; font-weight:900; margin-bottom:12px;">TABLE: 0 CARDS</div>
+            <div id="stack-msg" style="text-align:center; color:var(--gold); font-size:0.85rem; font-weight:900; margin-bottom:10px;">TABLE: 0 CARDS</div>
             <div class="card-container" id="my-hand"></div>
             <div class="btn-group">
                 <button id="btn-liar" class="action-btn btn-liar" onclick="callLiar()">LIAR!</button>
@@ -146,7 +167,7 @@
         <div id="blood-vignette" style="position:absolute; inset:0; background:radial-gradient(circle, transparent 20%, rgba(150,0,0,0.8) 100%); opacity:0; transition:0.3s;"></div>
         <div id="exe-avatar" style="font-size: 8rem; margin-bottom: 20px;"></div>
         <div id="aim-ui" class="aim-ui"></div>
-        <div id="exe-status">TARGETING</div>
+        <div id="exe-status" style="font-family:'Cinzel'; font-size: 2.8rem; margin-top: 40px; font-weight:900; letter-spacing:5px;">TARGETING</div>
     </div>
 
     <script>
@@ -271,7 +292,8 @@
             document.getElementById('target-display').innerText = data.targetCard;
             document.getElementById('sys-msg').innerText = data.log;
             document.getElementById('stack-msg').innerText = `TABLE: ${data.lastPlayed ? data.lastPlayed.length : 0} CARDS`;
-            // 修復：手動更新 PLAY 按鈕文字
+            
+            // 重要：修正選牌數量顯示
             document.getElementById('btn-play').innerText = `PLAY (${selectedIndices.length})`;
 
             if(data.starterIdx !== -1) {
@@ -292,12 +314,13 @@
                 grid.appendChild(div);
             });
 
-            // --- 絕對不遮擋手牌佈局 ---
+            // --- 核心改進：抽走留白佈局邏輯 ---
             const me = data.players[myIdx]; const handDiv = document.getElementById('my-hand'); handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
                 const total = me.hand.length;
                 const hasSelected = selectedIndices.length > 0;
-                const centerX = handDiv.clientWidth / 2;
+                // 使用固定間距，即便選中也不會收縮
+                const spacing = (handDiv.clientWidth < 400) ? 38 : 45;
 
                 me.hand.forEach((card, i) => {
                     const isSelected = selectedIndices.includes(i);
@@ -305,23 +328,15 @@
                     const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSelected?'selected':''} ${hasSelected && !isSelected ? 'unfocused' : ''}`;
                     
-                    let finalLeft, finalBottom, finalRotate;
+                    // X 軸位置固定：(index - 中心點) * 間距
+                    const offsetX = (i - (total - 1) / 2) * spacing;
+                    // Y 軸與角度：只有選中時才歸零並上移，其餘保持扇形
+                    const rotate = isSelected ? 0 : (i - (total - 1) / 2) * 10;
+                    const bottom = isSelected ? 125 : 15 + Math.abs(i - (total - 1) / 2) * 5;
 
-                    if (isSelected) {
-                        const sOrder = selectedIndices.indexOf(i); const sCount = selectedIndices.length;
-                        // 選中區間距加大到 115px，絕對看清花色
-                        finalLeft = centerX + (sOrder - (sCount - 1) / 2) * 115;
-                        finalBottom = 155; finalRotate = 0;
-                        cDiv.style.zIndex = 1000 + sOrder;
-                    } else {
-                        finalLeft = centerX + (i - (total - 1) / 2) * 35;
-                        finalBottom = 15; finalRotate = (i - (total - 1) / 2) * 12;
-                        cDiv.style.zIndex = 100 + i;
-                    }
-
-                    cDiv.style.left = `${finalLeft}px`;
-                    cDiv.style.bottom = `${finalBottom}px`;
-                    cDiv.style.transform = `rotate(${finalRotate}deg)`;
+                    cDiv.style.transform = `translateX(${offsetX}px) rotate(${rotate}deg)`;
+                    cDiv.style.bottom = `${bottom}px`;
+                    cDiv.style.zIndex = isSelected ? 500 : 100 + i;
 
                     cDiv.innerHTML = `<div>${card.v}</div><div style="font-size:1.8rem; align-self:center;">${card.s}</div><div style="transform:rotate(180deg)">${card.v}</div>`;
                     cDiv.onclick = () => { 
@@ -331,7 +346,7 @@
                             if(!card.isDevil && selectedIndices.some(idx => me.hand[idx].isDevil)) return; 
                             if(selectedIndices.length < 3) selectedIndices.push(i); 
                         } 
-                        syncGame(data); // 點擊時主動刷新 UI
+                        syncGame(data); // 每次點擊重新渲染確保位置固定
                     };
                     handDiv.appendChild(cDiv);
                 });
