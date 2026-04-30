@@ -3,212 +3,194 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Liar's Bar - Royal Deluxe</title>
+    <title>Liar's Bar - Royal Luxury Edition</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Noto+Sans+TC:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Noto+Sans+TC:wght@300;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --gold: #d4af37; 
-            --gold-bright: #f9e29f;
-            --crimson: #8b0000; 
-            --bg: #0a0a0c; 
-            --card-white: #fdfdfd;
-            --glass: rgba(255, 255, 255, 0.05);
-            --border: rgba(255, 255, 255, 0.1);
+            --gold: #d4af37; --gold-l: #f9e29f; --gold-d: #8a6d3b;
+            --bg: #050505; --panel: rgba(20, 20, 25, 0.9);
+            --border: rgba(212, 175, 55, 0.3);
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
-        
         body { 
             background: var(--bg); 
-            background-image: radial-gradient(circle at center, #1a1a1e 0%, #050507 100%);
-            color: white; 
-            font-family: 'Noto Sans TC', sans-serif; 
-            margin: 0; 
-            overflow: hidden; 
-            height: 100dvh; 
-            display: flex; 
-            flex-direction: column; 
+            background-image: radial-gradient(circle at center, #15151a 0%, #050505 100%);
+            color: white; font-family: 'Noto Sans TC', sans-serif; 
+            margin: 0; overflow: hidden; height: 100dvh; display: flex; flex-direction: column; 
         }
 
-        /* --- 氛圍裝飾 --- */
-        body::before {
-            content: ""; position: fixed; inset: 0;
+        /* 背景噪點裝飾 */
+        body::after {
+            content: ""; position: fixed; inset: 0; opacity: 0.03; pointer-events: none;
             background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
-            opacity: 0.1; pointer-events: none; z-index: 1;
         }
 
-        /* --- 大廳與選角 --- */
-        .lobby-screen, .setup-screen { 
-            position: fixed; inset: 0; z-index: 100; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px;
-            backdrop-filter: blur(10px);
+        /* --- 1. 奢華大廳介面 --- */
+        .lobby-screen {
+            position: fixed; inset: 0; z-index: 101; background: var(--bg);
+            display: flex; align-items: center; justify-content: center;
         }
-
-        .lobby-card { 
-            background: rgba(15, 15, 18, 0.95); 
-            padding: 30px; border-radius: 20px; 
-            border: 1px solid var(--gold); 
-            width: 100%; max-width: 380px; text-align: center; 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 15px rgba(212, 175, 55, 0.2);
+        .lobby-container {
+            position: relative; background: var(--panel); border: 1px solid var(--gold);
+            border-radius: 30px; padding: 40px 30px; width: 90%; max-width: 380px;
+            text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 20px rgba(212, 175, 55, 0.15);
+            backdrop-filter: blur(20px); overflow: hidden;
         }
-
-        input { 
-            width: 100%; padding: 15px; margin: 12px 0; border-radius: 12px; 
-            border: 1px solid #333; background: #000; color: var(--gold); 
-            font-size: 1.1rem; text-align: center; font-family: 'Cinzel';
+        .lobby-logo {
+            font-family: 'Cinzel'; font-size: 2.8rem; color: var(--gold);
+            margin-bottom: 35px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5); letter-spacing: 4px;
         }
-
-        .primary-btn { 
-            width: 100%; padding: 16px; background: linear-gradient(135deg, var(--gold) 0%, #b8860b 100%); 
-            border: none; border-radius: 12px; font-weight: 900; cursor: pointer; color: black; 
-            margin-top: 10px; font-size: 1.1rem; text-transform: uppercase; letter-spacing: 1px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3); transition: 0.2s;
+        .input-group { position: relative; margin-bottom: 25px; text-align: left; }
+        .input-group label {
+            display: block; font-family: 'Cinzel'; font-size: 0.75rem; color: var(--gold-l);
+            margin-bottom: 8px; margin-left: 10px; letter-spacing: 1px;
         }
-        .primary-btn:active { transform: scale(0.96); opacity: 0.9; }
-
-        /* --- 遊戲主畫面 --- */
-        .game-screen { display: none; flex-direction: column; height: 100dvh; position: relative; z-index: 2; }
-
-        .header-panel { 
-            padding: 15px 10px; background: linear-gradient(to bottom, #000, transparent); 
-            text-align: center; border-bottom: 1px solid var(--border);
+        .lobby-input {
+            width: 100%; padding: 15px 20px; background: #000; border: 1px solid #333;
+            border-radius: 15px; color: var(--gold); font-family: 'Noto Sans TC'; font-size: 1.1rem;
+            transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); text-align: center;
         }
-
-        #target-display { 
-            font-family: 'Cinzel'; font-size: 3.5rem; color: var(--gold); 
-            height: 4rem; display: flex; align-items: center; justify-content: center;
-            text-shadow: 0 0 20px rgba(212, 175, 55, 0.6); font-weight: 900;
-        }
-
-        .sequence-bar { 
-            font-size: 0.7rem; color: #888; background: rgba(0,0,0,0.5); 
-            padding: 8px; border-radius: 30px; margin: 10px auto; width: 90%; 
-            display: flex; justify-content: center; gap: 10px; border: 1px solid var(--border);
-        }
-        .seq-item.active { color: var(--gold-bright); font-weight: 900; transform: scale(1.1); text-shadow: 0 0 8px var(--gold); }
-
-        /* 玩家網格 */
-        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 15px; }
-        .p-box { 
-            background: var(--glass); border: 1px solid var(--border); border-radius: 18px; 
-            padding: 12px; text-align: center; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
-            position: relative; backdrop-filter: blur(5px);
-        }
-        .p-box.active { 
-            border-color: var(--gold); background: rgba(212, 175, 55, 0.1); 
-            box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); transform: scale(1.05);
-        }
-        .p-box.dead { opacity: 0.3; filter: grayscale(1) blur(1px); border-color: #ff0000; }
+        .lobby-input:focus { border-color: var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); outline: none; }
         
-        .p-emoji { font-size: 2.2rem; margin-bottom: 5px; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); }
-        .p-name { font-size: 0.9rem; font-weight: 900; letter-spacing: 1px; color: #eee; }
-        .p-stats { font-size: 0.7rem; color: #ff4444; font-family: 'Cinzel'; margin-top: 4px; font-weight: bold; }
+        .main-btn {
+            width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+            border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900;
+            font-size: 1.2rem; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+        }
+        .sub-btn {
+            width: 100%; padding: 14px; background: transparent; border: 1px solid var(--border);
+            border-radius: 15px; color: var(--gold-l); font-family: 'Cinzel'; font-size: 0.9rem;
+            cursor: pointer; transition: 0.3s; margin-top: 15px; backdrop-filter: blur(5px);
+        }
 
-        /* 擬真卡牌 */
+        /* --- 2. 奢華選角介面 --- */
+        .setup-screen {
+            position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(15px);
+        }
+        .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; }
+        .role-card {
+            background: linear-gradient(145deg, #1a1a20, #0a0a0c); border: 1px solid var(--border);
+            border-radius: 20px; padding: 20px 10px; text-align: center; cursor: pointer;
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+        }
+        .role-card.taken { opacity: 0.2; filter: grayscale(1); cursor: not-allowed; }
+        .role-card.me { border-color: var(--gold); box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); transform: scale(1.05); }
+        .role-emoji { font-size: 2.5rem; display: block; margin-bottom: 8px; filter: drop-shadow(0 5px 10px #000); }
+        .role-name { font-family: 'Cinzel'; font-weight: 900; color: var(--gold-l); font-size: 0.9rem; }
+
+        /* --- 3. 遊戲畫面 --- */
+        .game-screen { display: none; flex-direction: column; height: 100dvh; }
+        .my-turn-glow {
+            position: fixed; inset: 0; pointer-events: none; z-index: 5;
+            box-shadow: inset 0 0 50px rgba(212, 175, 55, 0); transition: 0.5s;
+        }
+        .active-turn .my-turn-glow { animation: border-breath 2s infinite alternate; }
+        @keyframes border-breath { 
+            from { box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.1); } 
+            to { box-shadow: inset 0 0 70px rgba(212, 175, 55, 0.4); } 
+        }
+
+        .header-panel { padding: 15px; background: linear-gradient(to bottom, #000, transparent); text-align: center; border-bottom: 1px solid var(--border); }
+        #target-display { font-family: 'Cinzel'; font-size: 3.5rem; color: var(--gold); text-shadow: 0 0 25px var(--gold-d); font-weight: 900; }
+        .sequence-bar { font-size: 0.7rem; color: #888; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 30px; margin: 10px auto; width: 90%; display: flex; justify-content: center; gap: 10px; border: 1px solid var(--border); }
+        .seq-item.active { color: var(--gold-bright); font-weight: 900; text-shadow: 0 0 10px var(--gold); }
+
+        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
+        .p-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 18px; padding: 12px; text-align: center; backdrop-filter: blur(5px); transition: 0.3s; }
+        .p-box.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.08); }
+        .p-box.dead { opacity: 0.2; filter: grayscale(1); }
+
+        /* --- 手牌與按鈕 --- */
         #hand-area { 
-            background: linear-gradient(to top, #000 70%, #111 100%); 
-            padding: 20px 15px; border-radius: 30px 30px 0 0; 
-            flex: 1; display: flex; flex-direction: column; border-top: 2px solid var(--gold);
-            box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
+            background: linear-gradient(to top, #000 80%, #0a0a0c 100%); 
+            padding: 20px 10px; border-radius: 40px 40px 0 0; border-top: 2px solid var(--gold);
+            flex: 1; display: flex; flex-direction: column; justify-content: flex-end;
         }
-
-        .card-scroll { 
-            display: flex; overflow-x: auto; gap: 12px; padding: 20px 5px; 
-            flex: 1; align-items: center; scrollbar-width: none;
-        }
+        .card-scroll { display: flex; justify-content: center; align-items: flex-end; height: 160px; position: relative; margin-bottom: 20px; }
         .card { 
-            flex: 0 0 80px; height: 120px; background: var(--card-white); color: #111; 
-            border-radius: 12px; padding: 8px; display: flex; flex-direction: column; 
-            justify-content: space-between; font-weight: 900; position: relative; 
-            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); border: 1px solid #ddd;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.5); user-select: none;
+            width: 85px; height: 130px; background: #fff; border-radius: 12px; color: #111; font-weight: 900; padding: 10px; 
+            display: flex; flex-direction: column; justify-content: space-between; position: absolute; bottom: 10px;
+            transition: 0.3s cubic-bezier(0.2, 1, 0.3, 1); box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid #ccc; transform-origin: bottom center;
         }
-        .card.red { color: #cc0000; }
-        .card.selected { transform: translateY(-25px) rotate(-2deg); border: 3px solid var(--gold); box-shadow: 0 15px 30px rgba(212, 175, 55, 0.4); }
-        
-        /* 魔鬼牌特效 */
-        .card.devil { 
-            background: #111; color: #ff3333; border: 2px solid #ff0000; 
-            box-shadow: 0 0 25px #ff0000; animation: devil-burn 1.5s infinite;
-        }
-        @keyframes devil-burn { 0% { box-shadow: 0 0 10px #ff0000; } 50% { box-shadow: 0 0 30px #ff0000, 0 0 10px orange; } 100% { box-shadow: 0 0 10px #ff0000; } }
+        .card.selected { transform: translateY(-45px) scale(1.1) !important; z-index: 100 !important; border: 3px solid var(--gold); box-shadow: 0 20px 40px rgba(212, 175, 55, 0.5); }
+        .card.red { color: #d00; }
+        .card.devil { border: 2px solid #f00; box-shadow: 0 0 20px #f00; animation: devil-pulse 1s infinite alternate; }
+        @keyframes devil-pulse { from { box-shadow: 0 0 5px #f00; } to { box-shadow: 0 0 25px #f00; } }
+        .card-flying { transform: translateY(-600px) scale(0) rotate(30deg) !important; opacity: 0 !important; }
 
-        .btn-group { display: flex; gap: 12px; padding: 15px 0; }
-        .action-btn { 
-            flex: 1; padding: 18px; border-radius: 15px; border: none; 
-            font-weight: 900; font-size: 1.2rem; cursor: pointer; color: #fff;
-            box-shadow: 0 6px 0 rgba(0,0,0,0.3); transition: 0.1s;
-        }
-        .action-btn:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.3); }
-        .btn-play { background: linear-gradient(to bottom, var(--gold), #b8860b); color: #000; }
-        .btn-liar { background: linear-gradient(to bottom, #b30000, #660000); }
+        .btn-group { display: flex; gap: 15px; padding: 10px; }
+        .action-btn { flex: 1; padding: 18px; border-radius: 15px; border: none; font-weight: 900; font-size: 1.3rem; font-family: 'Cinzel'; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.5); }
+        .btn-play { background: var(--gold); color: #000; }
+        .btn-liar { background: #8b0000; color: #fff; }
         .btn-disabled { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
 
-        /* 處決動畫升級 */
-        #execution-overlay { 
-            display: none; position: fixed; inset: 0; background: #000; z-index: 2000; 
-            flex-direction: column; justify-content: center; align-items: center; 
-        }
-        .blood-vignette { 
-            position: absolute; inset: 0; 
-            background: radial-gradient(circle, transparent 20%, rgba(150,0,0,0.8) 100%); 
-            opacity: 0; pointer-events: none;
-        }
-        .aim-ui { width: 180px; height: 180px; border: 4px solid #ff0000; border-radius: 50%; position: relative; animation: aim-wobble 2s infinite ease-in-out; }
-        @keyframes aim-wobble { 0%, 100% { transform: translate(0,0); } 25% { transform: translate(5px, -5px); } 75% { transform: translate(-5px, 5px); } }
-
-        .reset-panel { display: flex; gap: 8px; margin-top: 8px; padding: 0 10px; }
-        .mini-btn { 
-            flex: 1; background: rgba(255,255,255,0.05); border: 1px solid #444; 
-            color: #aaa; font-size: 0.7rem; padding: 8px; border-radius: 8px; font-weight: bold;
-        }
+        /* --- 處決與動畫 --- */
+        #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
+        .aim-ui { width: 240px; height: 240px; border: 4px solid #f00; border-radius: 50%; position: relative; box-shadow: 0 0 30px rgba(255,0,0,0.5); }
+        .aim-ui::before, .aim-ui::after { content: ''; position: absolute; background: #f00; box-shadow: 0 0 5px red; }
+        .aim-ui::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
+        .aim-ui::after { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
+        
+        .locking { animation: aim-lock 0.2s infinite alternate; border-color: #fff !important; }
+        @keyframes aim-lock { from { transform: scale(1); } to { transform: scale(0.9); } }
+        .safe-glow { border-color: #00ff00 !important; box-shadow: 0 0 50px #00ff00 !important; transform: scale(1.2); opacity: 0; transition: 0.6s; }
+        .shaking { animation: shake 0.1s infinite; }
+        @keyframes shake { 0% { transform: translate(0,0); } 50% { transform: translate(-3px, 3px); } 100% { transform: translate(3px, -3px); } }
     </style>
 </head>
-<body>
+<body id="main-body">
 
-    <!-- 1. 精美大廳 -->
+    <div class="my-turn-glow"></div>
+
+    <!-- 1. 奢華大廳 -->
     <div id="lobby-screen" class="lobby-screen">
-        <div class="lobby-card">
-            <h1 style="color:var(--gold); font-family:'Cinzel'; font-size:2.8rem; margin:0 0 20px 0;">LIAR'S BAR</h1>
-            <input type="text" id="input-room-id" placeholder="ROOM ID">
-            <input type="password" id="input-room-pw" placeholder="4-DIGIT PIN" maxlength="4">
-            <button class="primary-btn" onclick="handleRoomAction('join')">Enter Bar</button>
-            <button class="primary-btn" style="background:#1a1a1c; color:var(--gold); border:1px solid var(--gold); margin-top:15px;" onclick="handleRoomAction('create')">Host New Table</button>
-            <p style="color:#666; font-size:0.7rem; margin-top:20px; font-style:italic;">Empty tables will be cleared automatically.</p>
+        <div class="lobby-container">
+            <h1 class="lobby-logo">LIAR'S BAR</h1>
+            <div class="input-group">
+                <label>TABLE IDENTIFIER</label>
+                <input type="text" id="input-room-id" class="lobby-input" placeholder="ROOM ID">
+            </div>
+            <div class="input-group">
+                <label>ACCESS PIN</label>
+                <input type="password" id="input-room-pw" class="lobby-input" placeholder="4-DIGIT PIN" maxlength="4">
+            </div>
+            <button class="main-btn" onclick="handleRoomAction('join')">JOIN BAR</button>
+            <button class="sub-btn" onclick="handleRoomAction('create')">HOST NEW TABLE</button>
         </div>
     </div>
 
-    <!-- 2. 選角畫面 -->
+    <!-- 2. 選角介面 -->
     <div id="setup-screen" class="setup-screen" style="display:none;">
-        <h2 id="setup-title" style="color:var(--gold); font-family:'Cinzel'; margin-bottom:20px; letter-spacing:2px;">SELECT YOUR AVATAR</h2>
+        <h2 style="color:var(--gold); font-family:'Cinzel'; margin-bottom:30px; letter-spacing:3px;">SELECT AVATAR</h2>
         <div id="role-grid" class="role-grid"></div>
-        <button class="primary-btn" id="start-trigger-btn" style="display:none; max-width:320px; margin-top:30px;" onclick="masterAction()">🎲 Shuffle & Deal</button>
-        <button class="secondary-btn" style="color:#666; font-size:0.8rem; border:none; margin-top:20px;" onclick="location.reload()">Back to Lobby</button>
+        <button class="main-btn" id="start-trigger-btn" style="display:none; max-width:320px; margin-top:40px; background:#fff; color:#000;" onclick="masterAction()">🎲 SHUFFLE & DEAL</button>
+        <button class="sub-btn" style="width:200px; border:none; color:#666;" onclick="location.reload()">Back to Lobby</button>
     </div>
 
-    <!-- 3. 遊戲畫面 -->
+    <!-- 3. 遊戲介面 -->
     <div id="game-screen" class="game-screen">
         <div class="header-panel">
-            <div class="info-row">
-                <div id="my-id-label" class="tag tag-gold">FOX</div>
-                <div id="room-tag" class="tag tag-dark">ROOM: --</div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div id="my-id-label" style="background:var(--gold); color:#000; padding:3px 12px; border-radius:20px; font-weight:900; font-size:0.8rem;">FOX</div>
+                <div id="room-tag" style="color:var(--gold-l); font-size:0.8rem; font-family:'Cinzel';">ROOM: --</div>
             </div>
             <div id="target-display">?</div>
             <div class="sequence-bar" id="sequence-bar">Waiting...</div>
-            <div class="reset-panel">
-                <button class="mini-btn" onclick="confirmReset('GAME')">🔄 RE-SELECT</button>
-                <button class="mini-btn" onclick="confirmReset('DEAL')">🃏 RE-DEAL</button>
+            <div style="display:flex; gap:10px;">
+                <button class="sub-btn" style="margin:0; flex:1; padding:5px; font-size:0.6rem;" onclick="confirmReset('GAME')">🔄 RESET</button>
+                <button class="sub-btn" style="margin:0; flex:1; padding:5px; font-size:0.6rem; background:rgba(255,255,255,0.1);" onclick="confirmReset('DEAL')">🃏 REDEAL</button>
             </div>
         </div>
-
         <div class="player-grid" id="player-grid"></div>
-        <div id="sys-msg" style="text-align:center; font-size:0.8rem; color:#aaa; font-style:italic; padding:5px;">System Ready...</div>
-
+        <div id="sys-msg" style="text-align:center; font-size:0.8rem; color:#aaa; font-style:italic; height:1.2rem;">System Ready...</div>
         <div id="hand-area">
-            <div id="stack-msg" style="text-align:center; color:var(--gold); font-size:0.9rem; font-weight:900; margin-bottom:8px;">LAST PLAY: 0 CARDS</div>
+            <div id="stack-msg" style="text-align:center; color:var(--gold); font-size:0.9rem; font-weight:900; margin-bottom:10px;">TABLE: 0 CARDS</div>
             <div class="card-scroll" id="my-hand"></div>
             <div class="btn-group">
                 <button id="btn-liar" class="action-btn btn-liar" onclick="callLiar()">LIAR!</button>
@@ -217,16 +199,15 @@
         </div>
     </div>
 
-    <!-- 4. 處決動畫 -->
+    <!-- 4. 處決層 -->
     <div id="execution-overlay">
-        <div class="blood-vignette" id="blood-vignette"></div>
+        <div id="blood-vignette" style="position:absolute; inset:0; background:radial-gradient(circle, transparent 20%, rgba(150,0,0,0.8) 100%); opacity:0; transition:0.3s;"></div>
         <div id="exe-avatar" style="font-size: 8rem; margin-bottom: 20px;"></div>
-        <div class="aim-ui"></div>
-        <div id="exe-status" style="font-family:'Cinzel'; font-size: 2.5rem; margin-top: 40px; font-weight:900; letter-spacing:4px;">LOCKED ON</div>
+        <div id="aim-ui" class="aim-ui"></div>
+        <div id="exe-status" style="font-family:'Cinzel'; font-size: 2.8rem; margin-top: 40px; font-weight:900; letter-spacing:5px;">TARGETING</div>
     </div>
 
     <script>
-        // --- Firebase 配置 (維持原樣) ---
         const firebaseConfig = {
             apiKey: "AIzaSyA1FOVVQ2g9Empp9wisqa5JTzigVrifGVQ",
             authDomain: "liars-bar-game-13e0f.firebaseapp.com",
@@ -246,132 +227,76 @@
         ];
         const SUITS = ['♠','♥','♦','♣'];
         
-        let currentRoomId = null;
-        let myIdx = null;
-        let roomRef = null;
-        let selectedIndices = [];
-        let isAnimating = false;
+        let currentRoomId = null; let myIdx = null; let roomRef = null; let selectedIndices = []; let isAnimating = false;
 
         const audio = {
-            liar: () => playTone(600, 0.4),
-            shot: () => playGunshot(),
-            safe: () => playTone(400, 0.15),
-            click: () => playTone(1000, 0.05)
+            liar: () => playTone(600, 0.4), shot: () => playGunshot(), safe: () => playTone(440, 0.2), click: () => playTone(1000, 0.05), heartbeat: (rate) => playTone(55, 0.12, rate)
         };
-
-        // --- 核心逻辑 --- (基於你之前的版本，優化執行效率與狀態管理)
 
         async function handleRoomAction(action) {
             const rid = document.getElementById('input-room-id').value.trim().toUpperCase();
             const rpw = document.getElementById('input-room-pw').value.trim();
-            if (!rid || rpw.length !== 4) { alert("Invalid Room ID or PIN."); return; }
-
+            if (!rid || rpw.length !== 4) { alert("PIN required."); return; }
             const ref = db.ref('rooms/' + rid);
             const snap = await ref.once('value');
             const data = snap.val();
             const isEmpty = !data || !data.players || data.players.every(p => !p.isJoined);
 
             if (action === 'create') {
-                if (!isEmpty) { alert("Room is currently active."); return; }
-                await ref.set({
-                    password: rpw, state: 'LOBBY', hostIdx: -1,
-                    players: ROLES.map(r => ({ ...r, isJoined: false, isDead: true, chamber: [], bulletIdx: 0, hand: [] })),
-                    targetCard: '?', currentTurn: -1, starterIdx: -1, lastPlayer: -1, lastPlayed: []
-                });
+                if (!isEmpty) { alert("Room Active."); return; }
+                await ref.set({ password: rpw, state: 'LOBBY', players: ROLES.map(r => ({ ...r, isJoined: false, isDead: true, chamber: [], bulletIdx: 0, hand: [] })), targetCard: '?', currentTurn: -1, starterIdx: -1, lastPlayer: -1, lastPlayed: [] });
                 enterSetup(rid);
             } else {
-                if (!data) { alert("Room not found."); return; }
-                if (data.password !== rpw) { alert("Access Denied: PIN incorrect."); return; }
-                if (isEmpty && data.state !== 'LOBBY') await ref.update({ state: 'LOBBY' });
+                if (!data || data.password !== rpw) { alert("Error."); return; }
                 enterSetup(rid);
             }
         }
 
         function enterSetup(rid) {
-            currentRoomId = rid;
-            roomRef = db.ref('rooms/' + rid);
+            currentRoomId = rid; roomRef = db.ref('rooms/' + rid);
             document.getElementById('lobby-screen').style.display = 'none';
             document.getElementById('setup-screen').style.display = 'flex';
             document.getElementById('room-tag').innerText = `ROOM: ${rid}`;
-            
             roomRef.on('value', snap => {
-                const data = snap.val();
-                if(!data) return;
-                updateSetupUI(data);
-                if(myIdx !== null) syncGame(data);
+                const data = snap.val(); if(!data) return;
+                updateSetupUI(data); if(myIdx !== null) syncGame(data);
             });
         }
 
         function updateSetupUI(data) {
-            const grid = document.getElementById('role-grid');
-            grid.innerHTML = '';
+            const grid = document.getElementById('role-grid'); grid.innerHTML = '';
             data.players.forEach((p, i) => {
-                const btn = document.createElement('button');
-                btn.className = `role-btn ${p.isJoined ? 'taken' : ''} ${myIdx === i ? 'me' : ''}`;
-                btn.style.cssText = "background:#222; border:1px solid #444; color:white; padding:15px; border-radius:15px; font-weight:bold; cursor:pointer;";
-                if(p.isJoined) btn.style.opacity = "0.3";
-                btn.disabled = (p.isJoined || myIdx !== null);
-                btn.innerHTML = `<div style="font-size:2rem">${p.emoji}</div><div>${p.name}</div>`;
-                btn.onclick = () => tryJoin(i);
-                grid.appendChild(btn);
+                const card = document.createElement('div');
+                card.className = `role-card ${p.isJoined ? 'taken' : ''} ${myIdx === i ? 'me' : ''}`;
+                card.innerHTML = `<span class="role-emoji">${p.emoji}</span><span class="role-name">${p.name}</span>`;
+                if(!p.isJoined && myIdx === null) card.onclick = () => tryJoin(i);
+                grid.appendChild(card);
             });
             const joinedCount = data.players.filter(p => p.isJoined).length;
             document.getElementById('start-trigger-btn').style.display = (myIdx !== null && joinedCount >= 2) ? 'block' : 'none';
         }
 
         function tryJoin(idx) {
-            roomRef.child('players').child(idx).transaction(p => {
-                if (p && p.isJoined) return;
-                return { ...p, isJoined: true, isDead: false };
-            }, (err, committed) => {
-                if (committed) {
-                    myIdx = idx;
-                    document.getElementById('my-id-label').innerText = ROLES[idx].name;
-                    roomRef.child('players').child(idx).child('isJoined').onDisconnect().set(false);
-                }
-            });
+            roomRef.child('players').child(idx).transaction(p => { if (p && p.isJoined) return; return { ...p, isJoined: true, isDead: false }; }, (err, committed) => { if (committed) { myIdx = idx; document.getElementById('my-id-label').innerText = ROLES[idx].name; roomRef.child('players').child(idx).child('isJoined').onDisconnect().set(false); } });
         }
 
         function masterAction() {
-            audio.click();
             roomRef.once('value', s => {
-                const data = s.val();
-                roomRef.update({ state: 'ANIMATING', log: 'Shuffling the deck...' });
-
+                const data = s.val(); roomRef.update({ state: 'ANIMATING' });
                 setTimeout(() => {
-                    const targets = ['Q', 'K', 'A'];
-                    const finalTarget = targets[Math.floor(Math.random()*3)];
-                    
+                    const target = ['Q', 'K', 'A'][Math.floor(Math.random()*3)];
                     let deck = [];
                     ['Q','K','A'].forEach(v => { for(let i=0; i<6; i++) deck.push({ v, s: SUITS[i%4], isDevil: false }); });
                     for(let i=0; i<2; i++) deck.push({ v: 'J', s: '🃏', isDevil: false });
-                    
                     const qkaIndices = deck.map((c,i) => (c.v !== 'J') ? i : -1).filter(i=>i!==-1);
                     deck[qkaIndices[Math.floor(Math.random()*qkaIndices.length)]].isDevil = true;
                     deck = deck.sort(() => Math.random() - 0.5);
-
-                    const aliveIndices = data.players.map((p,i) => (p.isJoined && !p.isDead) ? i : -1).filter(i=>i!==-1);
-                    const finalStarter = aliveIndices[Math.floor(Math.random()*aliveIndices.length)];
-
-                    data.players.forEach((p, i) => {
-                        if(p.isJoined && !p.isDead) {
-                            p.hand = deck.splice(0, 5);
-                            if(!p.chamber || p.chamber.length === 0) {
-                                p.chamber = [0,0,0,0,0,0]; p.chamber[Math.floor(Math.random()*6)] = 1;
-                                p.bulletIdx = 0;
-                            }
-                        }
-                    });
-
-                    data.state = 'PLAYING';
-                    data.targetCard = finalTarget;
-                    data.currentTurn = finalStarter;
-                    data.starterIdx = finalStarter;
-                    data.lastPlayer = -1;
-                    data.lastPlayed = [];
-                    data.log = `Table set to ${finalTarget}. ${ROLES[finalStarter].name} starts.`;
+                    const alive = data.players.map((p,i) => (p.isJoined && !p.isDead) ? i : -1).filter(i=>i!==-1);
+                    const starter = alive[Math.floor(Math.random()*alive.length)];
+                    data.players.forEach((p, i) => { if(p.isJoined && !p.isDead) { p.hand = deck.splice(0, 5); if(!p.chamber || p.chamber.length === 0) { p.chamber = [0,0,0,0,0,0]; p.chamber[Math.floor(Math.random()*6)] = 1; p.bulletIdx = 0; } } });
+                    data.state = 'PLAYING'; data.targetCard = target; data.currentTurn = starter; data.starterIdx = starter; data.lastPlayer = -1; data.lastPlayed = []; data.log = `Table: ${target}. ${ROLES[starter].name}'s Turn.`;
                     roomRef.set(data);
-                }, 2000);
+                }, 1800);
             });
         }
 
@@ -379,166 +304,88 @@
             if(data.state === 'LOBBY') return;
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
+            const isMyTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
+            if(isMyTurn) document.getElementById('main-body').classList.add('active-turn');
+            else document.getElementById('main-body').classList.remove('active-turn');
 
-            if(data.state === 'ANIMATING') {
-                const ani = ['Q','K','A'];
-                document.getElementById('target-display').innerText = ani[Math.floor(Date.now()/100)%3];
-                return;
-            }
-
+            if(data.state === 'ANIMATING') { document.getElementById('target-display').innerText = ['Q','K','A'][Math.floor(Date.now()/100)%3]; return; }
             document.getElementById('target-display').innerText = data.targetCard;
             document.getElementById('sys-msg').innerText = data.log;
-            document.getElementById('stack-msg').innerText = `LAST PLAY: ${data.lastPlayed ? data.lastPlayed.length : 0} CARDS`;
+            document.getElementById('stack-msg').innerText = `TABLE: ${data.lastPlayed ? data.lastPlayed.length : 0} CARDS`;
 
             if(data.starterIdx !== -1) {
-                let seq = [];
-                for(let i=0; i<6; i++) {
-                    let idx = (data.starterIdx + i) % 6;
-                    let p = data.players[idx];
-                    if(p.isJoined && !p.isDead) {
-                        let cls = (data.currentTurn === idx) ? "class='seq-item active'" : "class='seq-item'";
-                        seq.push(`<span ${cls}>${p.name}</span>`);
-                    }
-                }
+                let seq = []; for(let i=0; i<6; i++) { let idx = (data.starterIdx + i) % 6; let p = data.players[idx]; if(p.isJoined && !p.isDead) { let cls = (data.currentTurn === idx) ? "class='seq-item active'" : "class='seq-item'"; seq.push(`<span ${cls}>${p.name}</span>`); } }
                 document.getElementById('sequence-bar').innerHTML = seq.join(' ➔ ');
             }
 
-            const grid = document.getElementById('player-grid');
-            grid.innerHTML = '';
-            data.players.forEach((p, i) => {
-                if(!p.isJoined) return;
-                const div = document.createElement('div');
-                div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`;
-                div.innerHTML = `<div class="p-emoji">${p.emoji}</div><div class="p-name">${p.name}</div><div class="p-stats">${p.bulletIdx}/6 SPENT</div>`;
-                grid.appendChild(div);
-            });
+            const grid = document.getElementById('player-grid'); grid.innerHTML = '';
+            data.players.forEach((p, i) => { if(!p.isJoined) return; const div = document.createElement('div'); div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`; div.innerHTML = `<div class="p-emoji">${p.emoji}</div><div class="p-name">${p.name}</div><div style="font-size:0.6rem; color:#f44; font-weight:900;">${p.bulletIdx}/6 SPENT</div>`; grid.appendChild(div); });
 
-            const me = data.players[myIdx];
-            const handDiv = document.getElementById('my-hand');
-            handDiv.innerHTML = '';
+            const me = data.players[myIdx]; const handDiv = document.getElementById('my-hand'); handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
+                const total = me.hand.length;
                 me.hand.forEach((card, i) => {
                     const isSelected = selectedIndices.includes(i);
-                    const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     const cDiv = document.createElement('div');
+                    const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSelected?'selected':''}`;
-                    cDiv.innerHTML = `<div>${card.v}</div><div style="font-size:1.8rem; align-self:center;">${card.s}</div><div style="transform:rotate(180deg)">${card.v}</div>`;
-                    cDiv.onclick = () => {
-                        audio.click();
-                        if(isSelected) selectedIndices = selectedIndices.filter(x => x !== i);
-                        else {
-                            if(card.isDevil && selectedIndices.length > 0) return;
-                            if(!card.isDevil && selectedIndices.some(idx => me.hand[idx].isDevil)) return;
-                            if(selectedIndices.length < 3) selectedIndices.push(i);
-                        }
-                        document.getElementById('btn-play').innerText = `PLAY (${selectedIndices.length})`;
-                        syncGame(data);
-                    }
+                    const angle = (i - (total - 1) / 2) * 10;
+                    const offset = (i - (total - 1) / 2) * 18;
+                    cDiv.style.transform = `rotate(${angle}deg) translateX(${offset}px)`;
+                    cDiv.style.zIndex = i;
+                    cDiv.innerHTML = `<div>${card.v}</div><div style="font-size:2rem; align-self:center;">${card.s}</div><div style="transform:rotate(180deg)">${card.v}</div>`;
+                    cDiv.onclick = () => { audio.click(); if(isSelected) selectedIndices = selectedIndices.filter(x => x !== i); else { if(card.isDevil && selectedIndices.length > 0) return; if(!card.isDevil && selectedIndices.some(idx => me.hand[idx].isDevil)) return; if(selectedIndices.length < 3) selectedIndices.push(i); } document.getElementById('btn-play').innerText = `PLAY (${selectedIndices.length})`; syncGame(data); };
                     handDiv.appendChild(cDiv);
                 });
             }
-
-            const myTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
-            document.getElementById('btn-play').disabled = !myTurn;
-            document.getElementById('btn-play').className = `action-btn btn-play ${myTurn?'':'btn-disabled'}`;
-            document.getElementById('btn-liar').disabled = (!myTurn || data.lastPlayer === -1);
-            document.getElementById('btn-liar').className = `action-btn btn-liar ${(!myTurn || data.lastPlayer === -1)?'btn-disabled':''}`;
-
+            document.getElementById('btn-play').disabled = !isMyTurn; 
+            document.getElementById('btn-liar').disabled = (!isMyTurn || data.lastPlayer === -1); 
             if(data.shooting && !isAnimating) runExecutionSequence(data.shooting);
         }
 
         function playCards() {
             if(selectedIndices.length === 0) return;
-            roomRef.once('value', s => {
-                const data = s.val();
-                const p = data.players[myIdx];
-                const played = [];
-                selectedIndices.sort((a,b)=>b-a).forEach(i => played.push(p.hand.splice(i,1)[0]));
-                data.lastPlayed = played;
-                data.lastPlayer = myIdx;
-                data.currentTurn = getNextAlive(data.players, myIdx);
-                data.log = `${ROLES[myIdx].name} played ${played.length} cards.`;
-                selectedIndices = [];
-                roomRef.set(data);
-            });
-        }
-
-        function callLiar() {
-            audio.liar();
-            roomRef.once('value', s => {
-                const data = s.val();
-                const cards = data.lastPlayed;
-                const isLie = cards.some(c => c.v !== data.targetCard && c.v !== 'J' && !c.isDevil);
-                const hasDevil = cards.some(c => c.isDevil);
-
-                let victims = hasDevil ? data.players.map((p,i) => (p.isJoined && !p.isDead && i !== data.lastPlayer) ? i : -1).filter(i=>i!==-1) : (isLie ? [data.lastPlayer] : [myIdx]);
-                const results = {};
-                victims.forEach(v => {
-                    const p = data.players[v];
-                    const hit = p.chamber[p.bulletIdx] === 1;
-                    results[v] = hit;
-                    p.bulletIdx++;
-                    if(hit) p.isDead = true;
+            const cardElements = document.querySelectorAll('.card.selected');
+            cardElements.forEach(el => el.classList.add('card-flying'));
+            setTimeout(() => {
+                roomRef.once('value', s => {
+                    const data = s.val(); const p = data.players[myIdx]; const played = [];
+                    selectedIndices.sort((a,b)=>b-a).forEach(i => played.push(p.hand.splice(i,1)[0]));
+                    data.lastPlayed = played; data.lastPlayer = myIdx; data.currentTurn = getNextAlive(data.players, myIdx);
+                    data.log = `${ROLES[myIdx].name} played ${played.length} cards.`; selectedIndices = []; roomRef.set(data);
                 });
-                data.shooting = { victims, results };
-                data.log = hasDevil ? "🔥 DEVIL CARD REVEALED! EXECUTING ALL!" : (isLie ? "🤥 BLUFF CALLED!" : "✅ TRUTH REVEALED! Accuser punished.");
-                roomRef.set(data);
-            });
+            }, 300);
         }
 
         async function runExecutionSequence(shooting) {
-            isAnimating = true;
-            const overlay = document.getElementById('execution-overlay');
+            isAnimating = true; const overlay = document.getElementById('execution-overlay'); const aim = document.getElementById('aim-ui'); const status = document.getElementById('exe-status'); const blood = document.getElementById('blood-vignette');
             overlay.style.display = 'flex';
-
             for(let vIdx of shooting.victims) {
                 document.getElementById('exe-avatar').innerText = ROLES[vIdx].emoji;
-                document.getElementById('exe-status').innerText = "TARGETING...";
-                document.getElementById('exe-status').style.color = "white";
-                document.getElementById('blood-vignette').style.opacity = 0;
-                await new Promise(r => setTimeout(r, 1600));
-                
+                status.innerText = "TARGETING..."; status.style.color = "white"; aim.className = "aim-ui"; blood.style.opacity = 0; audio.heartbeat(0.4); await new Promise(r => setTimeout(r, 1000));
+                status.innerText = "LOCKING ON..."; status.style.color = "yellow"; aim.classList.add('locking'); overlay.classList.add('shaking'); audio.heartbeat(1.2); await new Promise(r => setTimeout(r, 1200));
                 if(shooting.results[vIdx]) {
-                    audio.shot();
-                    document.getElementById('exe-status').innerText = "ELIMINATED";
-                    document.getElementById('exe-status').style.color = "#ff0000";
-                    document.getElementById('blood-vignette').style.opacity = 1;
-                    await new Promise(r => setTimeout(r, 1400));
+                    audio.shot(); status.innerText = "ELIMINATED"; status.style.color = "#ff0000"; blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1500));
                 } else {
-                    audio.safe();
-                    document.getElementById('exe-status').innerText = "SAFE";
-                    document.getElementById('exe-status').style.color = "#00ff00";
-                    await new Promise(r => setTimeout(r, 900));
+                    overlay.classList.remove('shaking'); aim.classList.remove('locking'); aim.classList.add('safe-glow'); audio.safe(); status.innerText = "S A F E"; status.style.color = "#00ff00"; await new Promise(r => setTimeout(r, 1500));
                 }
+                aim.className = "aim-ui"; overlay.style.background = "#000";
             }
-            overlay.style.display = 'none';
-            isAnimating = false;
-            
-            const snap = await roomRef.child('players').once('value');
-            const players = snap.val();
-            const firstJoinedIdx = players.findIndex(p => p.isJoined);
-            if(myIdx === firstJoinedIdx) {
-                roomRef.child('shooting').remove();
-                setTimeout(() => masterAction(), 500); 
-            }
+            overlay.style.display = 'none'; isAnimating = false; const snap = await roomRef.child('players').once('value');
+            if(myIdx === snap.val().findIndex(p=>p.isJoined)) { roomRef.child('shooting').remove(); setTimeout(() => masterAction(), 500); }
         }
 
-        function getNextAlive(players, current) {
-            let next = (current + 1) % 6;
-            while(!players[next].isJoined || players[next].isDead) next = (next + 1) % 6;
-            return next;
+        function callLiar() {
+            audio.liar(); roomRef.once('value', s => {
+                const data = s.val(); const cards = data.lastPlayed; const isLie = cards.some(c => c.v !== data.targetCard && c.v !== 'J' && !c.isDevil); const hasDevil = cards.some(c => c.isDevil);
+                let victims = hasDevil ? data.players.map((p,i) => (p.isJoined && !p.isDead && i !== data.lastPlayer) ? i : -1).filter(i=>i!==-1) : (isLie ? [data.lastPlayer] : [myIdx]);
+                const results = {}; victims.forEach(v => { const p = data.players[v]; const hit = p.chamber[p.bulletIdx] === 1; results[v] = hit; p.bulletIdx++; if(hit) p.isDead = true; });
+                data.shooting = { victims, results }; roomRef.set(data);
+            });
         }
-
-        function confirmReset(type) {
-            if(confirm(`Reset ${type==='GAME'?'Roles':'Round'}?`)) {
-                if(type === 'GAME') {
-                    roomRef.update({ state: 'LOBBY', lastPlayed: [], shooting: null });
-                    location.reload();
-                } else { masterAction(); }
-            }
-        }
-
-        function playTone(f, d) { try { const c=new AudioContext(); const o=c.createOscillator(); const g=c.createGain(); o.frequency.value=f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+d); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+d); } catch(e){} }
+        function getNextAlive(players, current) { let next = (current + 1) % 6; while(!players[next].isJoined || players[next].isDead) next = (next + 1) % 6; return next; }
+        function confirmReset(type) { if(confirm(`Reset?`)) { if(type === 'GAME') { roomRef.update({ state: 'LOBBY', lastPlayed: [], shooting: null }); location.reload(); } else masterAction(); } }
+        function playTone(f, d, rate = 1) { try { const c = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = c.createOscillator(); const g = c.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = c.createOscillator(); const g = c.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + d); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + d); } } catch(e){} }
         function playGunshot() { try { const c=new AudioContext(); const b=c.createBuffer(1, c.sampleRate, c.sampleRate); const d=b.getChannelData(0); for(let i=0; i<b.length; i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*0.04)); const s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(); } catch(e){} }
     </script>
 </body>
