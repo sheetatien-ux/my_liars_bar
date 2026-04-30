@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Liar's Bar - Royal Final Edition</title>
+    <title>Liar's Bar - Royal Final Platinum Edition</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
@@ -27,12 +27,12 @@
         .lobby-container { background: var(--panel); border: 1px solid var(--gold); border-radius: 30px; padding: 35px; width: 92%; max-width: 380px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.9); }
         .lobby-logo { font-family: 'Cinzel'; font-size: 2.5rem; color: var(--gold); margin-bottom: 25px; letter-spacing: 2px; }
         .lobby-input { width: 100%; padding: 14px; background: #000; border: 1px solid #444; border-radius: 12px; color: var(--gold); margin-bottom: 12px; text-align: center; font-size: 1rem; }
-        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.15rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.15rem; cursor: pointer; }
 
         /* --- 選角介面 --- */
         .setup-screen { position: fixed; inset: 0; z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(20px); }
         .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 440px; margin-bottom: 25px; }
-        .role-card { background: linear-gradient(145deg, #1a1a22, #0a0a0c); border: 1px solid var(--border); border-radius: 18px; padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 10px 20px #000; transition: 0.3s; }
+        .role-card { background: linear-gradient(145deg, #1a1a22, #0a0a0c); border: 1.5px solid var(--border); border-radius: 18px; padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 10px 20px #000; transition: 0.3s; }
         .role-card.taken { opacity: 0.2; filter: grayscale(1); }
         .role-card.me { border: 2.5px solid var(--gold); box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); }
         .role-card span { display: block; font-family: 'Cinzel'; font-weight: 900; color: var(--gold-l); font-size: 0.85rem; margin-top: 5px; }
@@ -47,23 +47,23 @@
         .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; flex-shrink: 0; }
         .p-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 8px; text-align: center; min-height: 65px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
         .p-box.active { border: 2.5px solid var(--gold); box-shadow: 0 0 12px var(--gold); }
+        
         .p-box.dead { filter: grayscale(1) brightness(0.6); opacity: 0.7; border-color: #555; }
         .out-stamp { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); color: #ff0000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.6rem; transform: rotate(-15deg); border: 2px solid #ff0000; margin: 10px; border-radius: 5px; z-index: 5; }
 
-        /* --- 手牌與物理插槽佈局 --- */
+        /* --- 修正版手牌佈局 (留白系統) --- */
         #hand-area { flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(to top, #000 80%, #0d0d0f 100%); border-top: 1.5px solid var(--gold); border-radius: 30px 30px 0 0; padding: 5px; position: relative; min-height: 0; }
         .card-container { flex: 1; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; overflow: visible; }
         .card { width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 10px; color: #111; font-weight: 900; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; position: absolute; left: 50%; bottom: 15px; margin-left: calc(var(--card-w) / -2); transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), bottom 0.4s, opacity 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid #ccc; z-index: 10; cursor: pointer; }
 
-        /* 選中卡片：上層水平大間距橫排 (解決重疊問題) */
         .card.selected { 
-            bottom: 160px !important; transform: rotate(0deg) scale(1.25) !important;
+            bottom: 140px !important; transform: rotate(0deg) scale(1.25) !important;
             z-index: 500 !important; border: 3px solid var(--gold); 
             box-shadow: 0 20px 50px rgba(212, 175, 55, 0.7); filter: brightness(1.1); 
         }
         .card.unfocused { opacity: 0.35; filter: grayscale(0.5); transform: scale(0.85); }
         .card.red { color: #d00; }
-        .card.devil { border: 2.5px solid #f00 !important; animation: devil-pulse 1s infinite alternate; }
+        .card.devil { border: 2.5px solid #f00 !important; box-shadow: 0 0 25px #f00 !important; animation: devil-pulse 1s infinite alternate; }
         @keyframes devil-pulse { from { box-shadow: 0 0 5px #f00; } to { box-shadow: 0 0 25px #f00; } }
         .card-flying { transform: translateY(-800px) scale(0) rotate(45deg) !important; opacity: 0 !important; }
 
@@ -165,18 +165,7 @@
 
         function playGunshot() { try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gT = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(180, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.15); gT.gain.setValueAtTime(1.8, ctx.currentTime); gT.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25); osc.connect(gT); gT.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.25); } catch(e){} }
         
-        // 寫實金屬空擊聲
-        function playEmptyClick() {
-            try {
-                const ctx = new AudioContext();
-                const osc = ctx.createOscillator(); const gain = ctx.createGain();
-                osc.type = 'sine'; osc.frequency.setValueAtTime(1200, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.start(); osc.stop(ctx.currentTime + 0.05);
-            } catch(e){}
-        }
+        function playEmptyClick() { try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(1200, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05); gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.05); } catch(e){} }
 
         async function handleRoomAction(action) {
             const rid = document.getElementById('input-room-id').value.trim().toUpperCase();
@@ -276,7 +265,7 @@
                 grid.appendChild(div);
             });
 
-            // 手牌邏輯：原地留白 + 選中大間距
+            // 手牌邏輯：原地留白 + 選中水平大間距
             const me = data.players[myIdx]; const handDiv = document.getElementById('my-hand'); handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
                 const total = 5; const hasSelected = selectedIndices.length > 0; const spacing = (handDiv.clientWidth < 420) ? 60 : 90;
@@ -285,16 +274,13 @@
                     const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSel?'selected':''} ${hasSelected && !isSel ? 'unfocused' : ''}`;
                     if (isSel) {
-                        // 【關鍵修復：選中後水平橫向排開，間距 130px】
                         const sOrder = selectedIndices.indexOf(i); 
                         const sCount = selectedIndices.length;
                         const spreadX = (sOrder - (sCount - 1) / 2) * 130; 
                         cDiv.style.transform = `translateX(${spreadX}px) rotate(0deg) scale(1.25)`;
                         cDiv.style.bottom = "160px"; cDiv.style.zIndex = 1000 + sOrder;
                     } else {
-                        // 【原地留白：固定座標】
-                        const offsetX = (i - 2) * spacing; 
-                        const rotate = (i - 2) * 10;
+                        const offsetX = (i - 2) * spacing; const rotate = (i - 2) * 10;
                         cDiv.style.transform = `translateX(${offsetX}px) rotate(${rotate}deg)`;
                         cDiv.style.bottom = "15px"; cDiv.style.zIndex = 100 + i;
                     }
@@ -304,8 +290,8 @@
                 });
             }
             const othersEmpty = data.players.every((p, i) => i === myIdx || !p.isJoined || p.isDead || (p.hand && p.hand.length === 0));
-            document.getElementById('btn-play').disabled = !myTurn || othersEmpty;
-            document.getElementById('btn-liar').disabled = (!myTurn || data.lastPlayer === -1);
+            document.getElementById('btn-play').disabled = !isMyTurn || othersEmpty;
+            document.getElementById('btn-liar').disabled = (!isMyTurn || data.lastPlayer === -1);
             if(data.shooting && !isAnimating) runExecutionSequence(data.shooting);
         }
 
@@ -320,7 +306,7 @@
                     playGunshot(); status.innerText = "ELIMINATED"; status.className = "text-eliminated"; status.style.color = ""; blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1800));
                 } else {
                     overlay.classList.remove('shaking'); aim.classList.remove('locking'); aim.classList.add('safe-glow'); 
-                    audio.safe(); // 觸發清脆金屬聲
+                    audio.safe(); 
                     status.innerText = "S A F E"; status.style.color = ""; status.className = "text-safe"; await new Promise(r => setTimeout(r, 1500));
                 }
                 aim.className = "aim-ui"; status.className = "";
@@ -352,7 +338,7 @@
         }
         function getNextAlive(players, current) { let next = (current + 1) % 6; while(!players[next].isJoined || players[next].isDead) next = (next + 1) % 6; return next; }
         function confirmReset(type) { if(confirm(`Reset?`)) { if(type === 'GAME') { roomRef.update({ state: 'LOBBY', lastPlayed: [], shooting: null }); location.reload(); } else masterAction(); } }
-        function playTone(f, d, rate = 1) { try { const ctx = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d); o.connect(g); g.connect(c.destination); o.start(); o.stop(ctx.currentTime + d); } } catch(e){} }
+        function playTone(f, d, rate = 1) { try { const ctx = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d); o.connect(g); g.connect(c.destination); o.start(); o.stop(ctx.currentTime + d); } } catch(e){} }
     </script>
 </body>
 </html>
