@@ -23,75 +23,92 @@
             margin: 0; overflow: hidden; height: 100dvh; display: flex; flex-direction: column; 
         }
 
+        /* --- 視覺特效 --- */
         body::after {
             content: ""; position: fixed; inset: 0; opacity: 0.03; pointer-events: none;
             background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png');
         }
 
+        /* --- 大廳介面 --- */
         .lobby-screen { position: fixed; inset: 0; z-index: 101; background: var(--bg); display: flex; align-items: center; justify-content: center; }
-        .lobby-container { position: relative; background: var(--panel); border: 1px solid var(--gold); border-radius: 30px; padding: 40px 30px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 20px rgba(212, 175, 55, 0.15); backdrop-filter: blur(20px); overflow: hidden; }
+        .lobby-container { position: relative; background: var(--panel); border: 1px solid var(--gold); border-radius: 30px; padding: 40px 30px; width: 90%; max-width: 380px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.8), 0 0 20px rgba(212, 175, 55, 0.15); backdrop-filter: blur(20px); }
         .lobby-logo { font-family: 'Cinzel'; font-size: 2.8rem; color: var(--gold); margin-bottom: 35px; text-shadow: 0 0 15px rgba(212, 175, 55, 0.5); letter-spacing: 4px; }
         .input-group { position: relative; margin-bottom: 25px; text-align: left; }
-        .input-group label { display: block; font-family: 'Cinzel'; font-size: 0.75rem; color: var(--gold-l); margin-bottom: 8px; margin-left: 10px; letter-spacing: 1px; }
-        .lobby-input { width: 100%; padding: 15px 20px; background: #000; border: 1px solid #333; border-radius: 15px; color: var(--gold); font-family: 'Noto Sans TC'; font-size: 1.1rem; transition: 0.3s; box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); text-align: center; }
-        .lobby-input:focus { border-color: var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); outline: none; }
-        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.2rem; cursor: pointer; transition: 0.2s; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
-        .sub-btn { width: 100%; padding: 14px; background: transparent; border: 1px solid var(--border); border-radius: 15px; color: var(--gold-l); font-family: 'Cinzel'; font-size: 0.9rem; cursor: pointer; transition: 0.3s; margin-top: 15px; backdrop-filter: blur(5px); }
+        .input-group label { display: block; font-family: 'Cinzel'; font-size: 0.75rem; color: var(--gold-l); margin-bottom: 8px; margin-left: 10px; }
+        .lobby-input { width: 100%; padding: 15px 20px; background: #000; border: 1px solid #333; border-radius: 15px; color: var(--gold); font-size: 1.1rem; text-align: center; }
+        .lobby-input:focus { border-color: var(--gold); outline: none; }
+        
+        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.2rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+        .sub-btn { width: 100%; padding: 14px; background: transparent; border: 1px solid var(--border); border-radius: 15px; color: var(--gold-l); cursor: pointer; margin-top: 15px; }
 
+        /* --- 選角介面 --- */
         .setup-screen { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(15px); }
         .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 400px; }
-        .role-card { background: linear-gradient(145deg, #1a1a20, #0a0a0c); border: 1px solid var(--border); border-radius: 20px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
-        .role-card.taken { opacity: 0.2; filter: grayscale(1); cursor: not-allowed; }
+        .role-card { background: linear-gradient(145deg, #1a1a20, #0a0a0c); border: 1px solid var(--border); border-radius: 20px; padding: 20px 10px; text-align: center; cursor: pointer; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .role-card.taken { opacity: 0.2; filter: grayscale(1); }
         .role-card.me { border-color: var(--gold); box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); transform: scale(1.05); }
-        .role-emoji { font-size: 2.5rem; display: block; margin-bottom: 8px; filter: drop-shadow(0 5px 10px #000); }
-        .role-name { font-family: 'Cinzel'; font-weight: 900; color: var(--gold-l); font-size: 0.9rem; }
 
+        /* --- 遊戲主畫面 --- */
         .game-screen { display: none; flex-direction: column; height: 100dvh; }
-        .my-turn-glow { position: fixed; inset: 0; pointer-events: none; z-index: 5; box-shadow: inset 0 0 50px rgba(212, 175, 55, 0); transition: 0.5s; }
+        .my-turn-glow { position: fixed; inset: 0; pointer-events: none; z-index: 5; transition: 0.5s; }
         .active-turn .my-turn-glow { animation: border-breath 2s infinite alternate; }
         @keyframes border-breath { from { box-shadow: inset 0 0 20px rgba(212, 175, 55, 0.1); } to { box-shadow: inset 0 0 70px rgba(212, 175, 55, 0.4); } }
 
         .header-panel { padding: 15px; background: linear-gradient(to bottom, #000, transparent); text-align: center; border-bottom: 1px solid var(--border); }
-        #target-display { font-family: 'Cinzel'; font-size: 3.5rem; color: var(--gold); text-shadow: 0 0 25px var(--gold-d); font-weight: 900; }
+        #target-display { font-family: 'Cinzel'; font-size: 3.5rem; color: var(--gold); font-weight: 900; }
         .sequence-bar { font-size: 0.7rem; color: #888; background: rgba(0,0,0,0.5); padding: 8px; border-radius: 30px; margin: 10px auto; width: 90%; display: flex; justify-content: center; gap: 10px; border: 1px solid var(--border); }
-        .seq-item.active { color: var(--gold-bright); font-weight: 900; text-shadow: 0 0 10px var(--gold); }
+        .seq-item.active { color: var(--gold-bright); font-weight: 900; }
 
         .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 10px; }
-        .p-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 18px; padding: 12px; text-align: center; backdrop-filter: blur(5px); transition: 0.3s; }
+        .p-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 18px; padding: 12px; text-align: center; backdrop-filter: blur(5px); }
         .p-box.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.08); }
-        .p-box.dead { opacity: 0.2; filter: grayscale(1); }
 
+        /* --- 核心：扇形手牌與選中修復 --- */
         #hand-area { background: linear-gradient(to top, #000 80%, #0a0a0c 100%); padding: 20px 10px; border-radius: 40px 40px 0 0; border-top: 2px solid var(--gold); flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
-        .card-scroll { display: flex; justify-content: center; align-items: flex-end; height: 160px; position: relative; margin-bottom: 20px; }
-        .card { width: 85px; height: 130px; background: #fff; border-radius: 12px; color: #111; font-weight: 900; padding: 10px; display: flex; flex-direction: column; justify-content: space-between; position: absolute; bottom: 10px; transition: 0.3s cubic-bezier(0.2, 1, 0.3, 1); box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid #ccc; transform-origin: bottom center; }
-        .card.selected { transform: translateY(-45px) scale(1.1) !important; z-index: 100 !important; border: 3px solid var(--gold); box-shadow: 0 20px 40px rgba(212, 175, 55, 0.5); }
+        .card-scroll { display: flex; justify-content: center; align-items: flex-end; height: 160px; position: relative; margin-bottom: 25px; }
+        
+        .card { 
+            width: 85px; height: 130px; background: #fff; border-radius: 12px; color: #111; font-weight: 900; padding: 10px; 
+            display: flex; flex-direction: column; justify-content: space-between; position: absolute; bottom: 10px;
+            transition: 0.3s cubic-bezier(0.2, 1, 0.3, 1); box-shadow: 0 10px 25px rgba(0,0,0,0.6); border: 1px solid #ccc; transform-origin: bottom center;
+        }
+        /* 選中時強制至頂並拉高 */
+        .card.selected { 
+            transform: translateY(-65px) scale(1.15) rotate(0deg) !important; 
+            z-index: 500 !important; 
+            border: 3px solid var(--gold); 
+            box-shadow: 0 25px 50px rgba(212, 175, 55, 0.6);
+            filter: brightness(1.1);
+        }
         .card.red { color: #d00; }
-        .card.devil { border: 2px solid #f00; box-shadow: 0 0 20px #f00; animation: devil-pulse 1s infinite alternate; }
+        .card.devil { border: 2px solid #f00; animation: devil-pulse 1s infinite alternate; }
         @keyframes devil-pulse { from { box-shadow: 0 0 5px #f00; } to { box-shadow: 0 0 25px #f00; } }
         .card-flying { transform: translateY(-600px) scale(0) rotate(30deg) !important; opacity: 0 !important; }
 
         .btn-group { display: flex; gap: 15px; padding: 10px; }
-        .action-btn { flex: 1; padding: 18px; border-radius: 15px; border: none; font-weight: 900; font-size: 1.3rem; font-family: 'Cinzel'; cursor: pointer; box-shadow: 0 4px 0 rgba(0,0,0,0.5); }
+        .action-btn { flex: 1; padding: 18px; border-radius: 15px; border: none; font-weight: 900; font-size: 1.3rem; font-family: 'Cinzel'; cursor: pointer; }
         .btn-play { background: var(--gold); color: #000; }
         .btn-liar { background: #8b0000; color: #fff; }
-        .btn-disabled { opacity: 0.2; filter: grayscale(1); pointer-events: none; }
 
+        /* --- 處決 UI --- */
         #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
         .aim-ui { width: 240px; height: 240px; border: 4px solid #f00; border-radius: 50%; position: relative; box-shadow: 0 0 30px rgba(255,0,0,0.5); }
         .aim-ui::before, .aim-ui::after { content: ''; position: absolute; background: #f00; box-shadow: 0 0 5px red; }
         .aim-ui::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
         .aim-ui::after { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
+        
         .locking { animation: aim-lock 0.2s infinite alternate; border-color: #fff !important; }
         @keyframes aim-lock { from { transform: scale(1); } to { transform: scale(0.9); } }
         .safe-glow { border-color: #00ff00 !important; box-shadow: 0 0 50px #00ff00 !important; transform: scale(1.2); opacity: 0; transition: 0.6s; }
         .shaking { animation: shake 0.1s infinite; }
-        @keyframes shake { 0% { transform: translate(0,0); } 50% { transform: translate(-3px, 3px); } 100% { transform: translate(3px, -3px); } }
+        @keyframes shake { 0% { transform: translate(0,0); } 50% { transform: translate(-3px, 3px); } 100% { transform: translate(4px, -4px); } }
     </style>
 </head>
 <body id="main-body">
 
     <div class="my-turn-glow"></div>
 
+    <!-- 奢華大廳 -->
     <div id="lobby-screen" class="lobby-screen">
         <div class="lobby-container">
             <h1 class="lobby-logo">LIAR'S BAR</h1>
@@ -101,13 +118,14 @@
             </div>
             <div class="input-group">
                 <label>ACCESS PIN</label>
-                <input type="password" id="input-room-pw" class="lobby-input" placeholder="4-DIGIT PIN" maxlength="4">
+                <input type="password" id="input-room-pw" class="lobby-input" placeholder="4-PIN" maxlength="4">
             </div>
             <button class="main-btn" onclick="handleRoomAction('join')">JOIN BAR</button>
             <button class="sub-btn" onclick="handleRoomAction('create')">HOST NEW TABLE</button>
         </div>
     </div>
 
+    <!-- 選角介面 -->
     <div id="setup-screen" class="setup-screen" style="display:none;">
         <h2 style="color:var(--gold); font-family:'Cinzel'; margin-bottom:30px; letter-spacing:3px;">SELECT AVATAR</h2>
         <div id="role-grid" class="role-grid"></div>
@@ -115,6 +133,7 @@
         <button class="sub-btn" style="width:200px; border:none; color:#666;" onclick="location.reload()">Back to Lobby</button>
     </div>
 
+    <!-- 遊戲介面 -->
     <div id="game-screen" class="game-screen">
         <div class="header-panel">
             <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -140,6 +159,7 @@
         </div>
     </div>
 
+    <!-- 處決層 -->
     <div id="execution-overlay">
         <div id="blood-vignette" style="position:absolute; inset:0; background:radial-gradient(circle, transparent 20%, rgba(150,0,0,0.8) 100%); opacity:0; transition:0.3s;"></div>
         <div id="exe-avatar" style="font-size: 8rem; margin-bottom: 20px;"></div>
@@ -160,69 +180,44 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        const ROLES = [
-            { id: 0, name: "FOX", emoji: "🦊" }, { id: 1, name: "LEOPARD", emoji: "🐆" },
-            { id: 2, name: "SLOTH", emoji: "🦥" }, { id: 3, name: "ZEBRA", emoji: "🦓" },
-            { id: 4, name: "BEAR", emoji: "🐻" }, { id: 5, name: "WOLF", emoji: "🐺" }
-        ];
+        const ROLES = [{id:0,name:"FOX",emoji:"🦊"},{id:1,name:"LEOPARD",emoji:"🐆"},{id:2,name:"SLOTH",emoji:"🦥"},{id:3,name:"ZEBRA",emoji:"🦓"},{id:4,name:"BEAR",emoji:"🐻"},{id:5,name:"WOLF",emoji:"🐺"}];
         const SUITS = ['♠','♥','♦','♣'];
         
         let currentRoomId = null; let myIdx = null; let roomRef = null; let selectedIndices = []; let isAnimating = false;
 
         const audio = {
-            liar: () => playTone(600, 0.4), 
-            shot: () => playGunshot(), // 這裡調用寫實槍聲
-            safe: () => playTone(440, 0.2), 
-            click: () => playTone(1000, 0.05), 
-            heartbeat: (rate) => playTone(55, 0.12, rate)
+            liar: () => playTone(600, 0.4), shot: () => playGunshot(), safe: () => playTone(440, 0.2), click: () => playTone(1000, 0.05), heartbeat: (rate) => playTone(55, 0.12, rate)
         };
 
-        // --- 寫實合成槍聲 (震撼升級版) ---
+        // --- 優化：槍聲合成器 ---
         function playGunshot() {
             try {
                 const ctx = new (window.AudioContext || window.webkitAudioContext)();
-                
-                // 1. 低頻轟鳴 (The Thump - 槍身震動)
+                // 1. 爆裂低音 (The Thump)
                 const osc = ctx.createOscillator();
                 const gThump = ctx.createGain();
                 osc.type = 'triangle';
-                osc.frequency.setValueAtTime(150, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(40, ctx.currentTime + 0.1);
-                gThump.gain.setValueAtTime(1.5, ctx.currentTime); // 加強音量
-                gThump.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-                osc.connect(gThump);
-                gThump.connect(ctx.destination);
-                osc.start();
-                osc.stop(ctx.currentTime + 0.2);
+                osc.frequency.setValueAtTime(180, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.15);
+                gThump.gain.setValueAtTime(1.8, ctx.currentTime);
+                gThump.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25);
+                osc.connect(gThump); gThump.connect(ctx.destination);
+                osc.start(); osc.stop(ctx.currentTime + 0.25);
 
-                // 2. 噪鳴聲 (The Crack & Tail - 撞針與出膛火藥聲)
-                const bufferSize = ctx.sampleRate * 2.0;
-                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                // 2. 破碎噪音 (The Crack)
+                const buffer = ctx.createBuffer(1, ctx.sampleRate * 1.5, ctx.sampleRate);
                 const data = buffer.getChannelData(0);
-                for (let i = 0; i < bufferSize; i++) {
-                    data[i] = Math.random() * 2 - 1; // 白色噪音
-                }
-                
-                const noise = ctx.createBufferSource();
-                noise.buffer = buffer;
+                for (let i = 0; i < buffer.length; i++) data[i] = Math.random() * 2 - 1;
+                const noise = ctx.createBufferSource(); noise.buffer = buffer;
                 const gNoise = ctx.createGain();
-                
-                // 瞬間爆發後緩慢衰減
                 gNoise.gain.setValueAtTime(1.0, ctx.currentTime);
-                gNoise.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-                
-                // 過濾器：讓聲音更紮實，不只有刺耳高音
+                gNoise.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.6);
                 const filter = ctx.createBiquadFilter();
-                filter.type = 'lowpass';
-                filter.frequency.setValueAtTime(8000, ctx.currentTime);
-                filter.frequency.exponentialRampToValueAtTime(1000, ctx.currentTime + 0.3);
-
-                noise.connect(filter);
-                filter.connect(gNoise);
-                gNoise.connect(ctx.destination);
-                
+                filter.type = 'lowpass'; filter.frequency.setValueAtTime(9000, ctx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(1200, ctx.currentTime + 0.4);
+                noise.connect(filter); filter.connect(gNoise); gNoise.connect(ctx.destination);
                 noise.start();
-            } catch (e) { console.log("Audio Error:", e); }
+            } catch (e) {}
         }
 
         async function handleRoomAction(action) {
@@ -296,6 +291,7 @@
             if(data.state === 'LOBBY') return;
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
+            
             const isMyTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
             if(isMyTurn) document.getElementById('main-body').classList.add('active-turn');
             else document.getElementById('main-body').classList.remove('active-turn');
@@ -311,8 +307,9 @@
             }
 
             const grid = document.getElementById('player-grid'); grid.innerHTML = '';
-            data.players.forEach((p, i) => { if(!p.isJoined) return; const div = document.createElement('div'); div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`; div.innerHTML = `<div class="p-emoji">${p.emoji}</div><div class="p-name">${p.name}</div><div style="font-size:0.6rem; color:#f44; font-weight:900;">${p.bulletIdx}/6 SPENT</div>`; grid.appendChild(div); });
+            data.players.forEach((p, i) => { if(!p.isJoined) return; const div = document.createElement('div'); div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`; div.innerHTML = `<div class="p-emoji" style="font-size:2rem">${p.emoji}</div><div class="p-name" style="font-weight:900;">${p.name}</div><div style="font-size:0.6rem; color:#f44; font-weight:900;">${p.bulletIdx}/6 SPENT</div>`; grid.appendChild(div); });
 
+            // --- 優化：扇形手牌層級控制 ---
             const me = data.players[myIdx]; const handDiv = document.getElementById('my-hand'); handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
                 const total = me.hand.length;
@@ -321,10 +318,12 @@
                     const cDiv = document.createElement('div');
                     const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSelected?'selected':''}`;
-                    const angle = (i - (total - 1) / 2) * 10;
-                    const offset = (i - (total - 1) / 2) * 18;
+                    
+                    const angle = (i - (total - 1) / 2) * 12; 
+                    const offset = (i - (total - 1) / 2) * 22;
+                    cDiv.style.zIndex = isSelected ? 500 : i; // 被選中的牌強制至頂
                     cDiv.style.transform = `rotate(${angle}deg) translateX(${offset}px)`;
-                    cDiv.style.zIndex = i;
+
                     cDiv.innerHTML = `<div>${card.v}</div><div style="font-size:2rem; align-self:center;">${card.s}</div><div style="transform:rotate(180deg)">${card.v}</div>`;
                     cDiv.onclick = () => { audio.click(); if(isSelected) selectedIndices = selectedIndices.filter(x => x !== i); else { if(card.isDevil && selectedIndices.length > 0) return; if(!card.isDevil && selectedIndices.some(idx => me.hand[idx].isDevil)) return; if(selectedIndices.length < 3) selectedIndices.push(i); } document.getElementById('btn-play').innerText = `PLAY (${selectedIndices.length})`; syncGame(data); };
                     handDiv.appendChild(cDiv);
@@ -337,8 +336,7 @@
 
         function playCards() {
             if(selectedIndices.length === 0) return;
-            const cardElements = document.querySelectorAll('.card.selected');
-            cardElements.forEach(el => el.classList.add('card-flying'));
+            document.querySelectorAll('.card.selected').forEach(el => el.classList.add('card-flying'));
             setTimeout(() => {
                 roomRef.once('value', s => {
                     const data = s.val(); const p = data.players[myIdx]; const played = [];
@@ -357,8 +355,7 @@
                 status.innerText = "TARGETING..."; status.style.color = "white"; aim.className = "aim-ui"; blood.style.opacity = 0; audio.heartbeat(0.4); await new Promise(r => setTimeout(r, 1000));
                 status.innerText = "LOCKING ON..."; status.style.color = "yellow"; aim.classList.add('locking'); overlay.classList.add('shaking'); audio.heartbeat(1.2); await new Promise(r => setTimeout(r, 1200));
                 if(shooting.results[vIdx]) {
-                    audio.shot(); // 觸發寫實槍聲
-                    status.innerText = "ELIMINATED"; status.style.color = "#ff0000"; blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1500));
+                    audio.shot(); status.innerText = "ELIMINATED"; status.style.color = "#ff0000"; blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1500));
                 } else {
                     overlay.classList.remove('shaking'); aim.classList.remove('locking'); aim.classList.add('safe-glow'); audio.safe(); status.innerText = "S A F E"; status.style.color = "#00ff00"; await new Promise(r => setTimeout(r, 1500));
                 }
@@ -378,19 +375,7 @@
         }
         function getNextAlive(players, current) { let next = (current + 1) % 6; while(!players[next].isJoined || players[next].isDead) next = (next + 1) % 6; return next; }
         function confirmReset(type) { if(confirm(`Reset?`)) { if(type === 'GAME') { roomRef.update({ state: 'LOBBY', lastPlayed: [], shooting: null }); location.reload(); } else masterAction(); } }
-        
-        function playTone(f, d, rate = 1) { 
-            try { 
-                const c = new AudioContext();
-                if (rate > 1) { 
-                    for(let i=0; i<rate*2.5; i++) { 
-                        const o = c.createOscillator(); const g = c.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); 
-                    } 
-                } else { 
-                    const o = c.createOscillator(); const g = c.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + d); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + d); 
-                } 
-            } catch(e){} 
-        }
+        function playTone(f, d, rate = 1) { try { const c = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = c.createOscillator(); const g = c.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = c.createOscillator(); const g = c.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + d); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime + d); } } catch(e){} }
     </script>
 </body>
 </html>
