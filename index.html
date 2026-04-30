@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Liar's Bar - Royal Final Platinum Edition</title>
+    <title>Liar's Bar - Royal Final Edition</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
@@ -22,74 +22,77 @@
         body { display: flex; flex-direction: column; }
         body::after { content: ""; position: fixed; inset: 0; opacity: 0.04; pointer-events: none; background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); }
 
-        /* --- 1. 奢華大廳 --- */
+        /* --- 登入畫面 --- */
         .lobby-screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; align-items: center; justify-content: center; }
         .lobby-container { background: var(--panel); border: 1px solid var(--gold); border-radius: 30px; padding: 35px; width: 92%; max-width: 380px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.9); }
         .lobby-logo { font-family: 'Cinzel'; font-size: 2.5rem; color: var(--gold); margin-bottom: 25px; letter-spacing: 2px; }
         .lobby-input { width: 100%; padding: 14px; background: #000; border: 1px solid #444; border-radius: 12px; color: var(--gold); margin-bottom: 12px; text-align: center; font-size: 1rem; }
-        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.15rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.15rem; cursor: pointer; }
 
-        /* --- 2. 選角介面 --- */
+        /* --- 選角介面 --- */
         .setup-screen { position: fixed; inset: 0; z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(20px); }
         .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 100%; max-width: 440px; margin-bottom: 25px; }
-        .role-card { background: linear-gradient(145deg, #1a1a22, #0a0a0c); border: 1px solid var(--border); border-radius: 18px; padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 10px 20px #000; transition: 0.3s; }
+        .role-card { background: linear-gradient(145deg, #1a1a22, #0a0a0c); border: 1px solid var(--border); border-radius: 18px; padding: 20px 10px; text-align: center; cursor: pointer; box-shadow: 0 10px 20px #000; }
         .role-card.taken { opacity: 0.2; filter: grayscale(1); }
-        .role-card.me { border: 2.5px solid var(--gold); box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); transform: scale(1.05); }
-        .role-card span { display: block; font-family: 'Cinzel'; font-weight: 900; color: var(--gold-l); font-size: 0.85rem; margin-top: 5px; }
+        .role-card.me { border: 2.5px solid var(--gold); box-shadow: 0 0 25px rgba(212, 175, 55, 0.4); }
 
-        /* --- 3. 遊戲主畫面 --- */
+        /* --- 遊戲主介面 --- */
         .game-screen { display: none; flex-direction: column; height: 100%; width: 100%; position: relative; z-index: 10; }
         .header-panel { padding: 10px; text-align: center; border-bottom: 1px solid var(--border); flex-shrink: 0; background: rgba(0,0,0,0.8); }
         #target-display { font-family: 'Cinzel'; font-size: 2.8rem; color: var(--gold); font-weight: 900; line-height: 1; }
         .sequence-bar { font-size: 0.6rem; color: #aaa; background: rgba(255,255,255,0.05); padding: 5px; border-radius: 30px; margin: 6px auto; width: 85%; display: flex; justify-content: center; gap: 8px; border: 1px solid #333; }
-        .seq-item.active { color: var(--gold-bright); font-weight: 900; text-decoration: underline; }
 
         .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; flex-shrink: 0; }
         .p-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 8px; text-align: center; min-height: 65px; display: flex; flex-direction: column; justify-content: center; position: relative; overflow: hidden; }
         .p-box.active { border: 2.5px solid var(--gold); box-shadow: 0 0 12px var(--gold); }
         
+        /* 淘汰效果修復 */
         .p-box.dead { filter: grayscale(1) brightness(0.6); opacity: 0.7; border-color: #555; }
-        .out-stamp { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); color: #ff0000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.6rem; transform: rotate(-15deg); border: 2px solid #ff0000; margin: 10px; border-radius: 5px; z-index: 5; }
+        .out-stamp {
+            position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+            background: rgba(0,0,0,0.3); color: #ff0000; font-family: 'Cinzel'; font-weight: 900;
+            font-size: 1.6rem; transform: rotate(-15deg); border: 2px solid #ff0000;
+            margin: 10px; border-radius: 5px; text-shadow: 0 0 10px #000; z-index: 5;
+        }
 
-        /* --- 手牌與物理插槽佈局 (絕對不重疊系統) --- */
-        #hand-area { flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(to top, #000 80%, #0d0d0f 100%); border-top: 1.5px solid var(--gold); border-radius: 30px 30px 0 0; padding: 5px; position: relative; min-height: 0; }
+        /* --- 修正版手牌佈局 --- */
+        #hand-area { 
+            flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+            background: linear-gradient(to top, #000 80%, #0d0d0f 100%);
+            border-top: 1.5px solid var(--gold); border-radius: 30px 30px 0 0; padding: 5px; position: relative;
+        }
         .card-container { flex: 1; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; overflow: visible; }
-        .card { width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 10px; color: #111; font-weight: 900; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; position: absolute; left: 50%; bottom: 15px; margin-left: calc(var(--card-w) / -2); transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), bottom 0.4s, opacity 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid #ccc; z-index: 10; cursor: pointer; }
+        .card { 
+            width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 10px; color: #111; font-weight: 900; padding: 6px; display: flex; flex-direction: column; justify-content: space-between;
+            position: absolute; left: 50%; bottom: 15px; margin-left: calc(var(--card-w) / -2);
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), bottom 0.4s, opacity 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid #ccc; z-index: 10; cursor: pointer;
+        }
 
+        /* 修復：選中牌橫向平鋪絕對不重疊 */
         .card.selected { 
-            bottom: 160px !important; transform: rotate(0deg) scale(1.25) !important;
-            z-index: 500 !important; border: 3px solid var(--gold); 
-            box-shadow: 0 20px 50px rgba(212, 175, 55, 0.7); filter: brightness(1.1); 
+            z-index: 500 !important; border: 3.5px solid var(--gold); 
+            box-shadow: 0 20px 50px rgba(212, 175, 55, 0.7); filter: brightness(1.1);
         }
         .card.unfocused { opacity: 0.35; filter: grayscale(0.5); transform: scale(0.85); }
         .card.red { color: #d00; }
         .card.devil { border: 2.5px solid #f00 !important; animation: devil-pulse 1s infinite alternate; }
         @keyframes devil-pulse { from { box-shadow: 0 0 5px #f00; } to { box-shadow: 0 0 25px #f00; } }
 
+        /* --- 控制按鈕組 --- */
         .btn-group { display: flex; gap: 10px; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); background: rgba(0,0,0,0.9); flex-shrink: 0; z-index: 600; }
         .action-btn { flex: 1; padding: 16px; border-radius: 12px; border: none; font-weight: 900; font-size: 1.1rem; font-family: 'Cinzel'; cursor: pointer; color: #fff; }
         .btn-play { background: var(--gold); color: #000; box-shadow: 0 4px 0 #8a6d3b; }
         .btn-liar { background: #8b0000; color: #fff; box-shadow: 0 4px 0 #400; }
 
-        /* --- 處決 UI 與十字準星 --- */
+        /* 處決動畫與十字準星 */
         #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
-        .aim-ui { width: 220px; height: 220px; border: 4px solid #ff0000; border-radius: 50%; position: relative; box-shadow: 0 0 30px rgba(255,0,0,0.5); transition: 0.3s; }
-        .aim-ui::before, .aim-ui::after { content: ''; position: absolute; background: #ff0000; box-shadow: 0 0 5px #f00; transition: 0.3s; }
+        .aim-ui { width: 220px; height: 220px; border: 4px solid #ff0000; border-radius: 50%; position: relative; box-shadow: 0 0 30px rgba(255,0,0,0.5); }
+        .aim-ui::before, .aim-ui::after { content: ''; position: absolute; background: #ff0000; box-shadow: 0 0 5px #f00; }
         .aim-ui::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
         .aim-ui::after { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
-
         .locking { animation: aim-lock 0.15s infinite alternate; border-color: #fff !important; }
         @keyframes aim-lock { from { transform: scale(1.1); } to { transform: scale(0.9); } }
-
-        /* SAFE 霓虹綠色彩修復 */
-        .safe-glow { border-color: #00ff00 !important; box-shadow: 0 0 50px #00ff00 !important; transform: scale(1.2); }
-        .safe-glow::before, .safe-glow::after { background: #00ff00 !important; box-shadow: 0 0 10px #00ff00 !important; }
-
-        #exe-status { font-family: 'Cinzel'; font-size: 2.8rem; margin-top: 40px; font-weight:900; letter-spacing:5px; transition: 0.3s; color: white; }
-        .text-safe { color: #00ff00 !important; text-shadow: 0 0 30px #00ff00 !important; transform: scale(1.2); }
-        
-        .shaking { animation: shake 0.1s infinite; }
-        @keyframes shake { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-3px, 3px); } }
     </style>
 </head>
 <body id="main-body">
@@ -115,13 +118,13 @@
     <div id="game-screen" class="game-screen">
         <div class="header-panel">
             <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div id="my-id-label" style="background:var(--gold); color:#000; padding:2px 10px; border-radius:20px; font-weight:900; font-size:0.75rem;">FOX</div>
+                <div id="my-id-label" style="background:var(--gold); color:#000; padding:2px 8px; border-radius:20px; font-weight:900; font-size:0.75rem;">FOX</div>
                 <div id="room-tag" style="color:var(--gold-l); font-size:0.75rem; font-family:'Cinzel';">ROOM: --</div>
             </div>
             <div id="target-display">?</div>
             <div class="sequence-bar" id="sequence-bar">Waiting...</div>
             <div style="display:flex; gap:10px; padding:2px 5px;">
-                <button class="main-btn" style="margin:0; flex:1; padding:5px; font-size:0.6rem; border-radius:8px;" onclick="confirmReset('GAME')">🔄 RESET</button>
+                <button class="main-btn" style="margin:0; flex:1; padding:4px; font-size:0.6rem; border-radius:8px;" onclick="confirmReset('GAME')">🔄 RESET</button>
                 <button class="main-btn" style="margin:0; flex:1; padding:4px; font-size:0.6rem; background:#444; color:#fff; border-radius:8px;" onclick="confirmReset('DEAL')">🃏 REDEAL</button>
             </div>
         </div>
@@ -141,7 +144,7 @@
         <div id="blood-vignette" style="position:absolute; inset:0; background:radial-gradient(circle, transparent 20%, rgba(150,0,0,0.8) 100%); opacity:0; transition:0.3s;"></div>
         <div id="exe-avatar" style="font-size: 8rem; margin-bottom: 20px;"></div>
         <div id="aim-ui" class="aim-ui"></div>
-        <div id="exe-status">TARGETING</div>
+        <div id="exe-status" style="font-family:'Cinzel'; font-size: 2.2rem; font-weight:900; margin-top:30px;">TARGETING</div>
     </div>
 
     <script>
@@ -160,11 +163,9 @@
         const ROLES = [{id:0,name:"FOX",emoji:"🦊"},{id:1,name:"LEOPARD",emoji:"🐆"},{id:2,name:"SLOTH",emoji:"🦥"},{id:3,name:"ZEBRA",emoji:"🦓"},{id:4,name:"BEAR",emoji:"🐻"},{id:5,name:"WOLF",emoji:"🐺"}];
         const SUITS = ['♠','♥','♦','♣'];
         let currentRoomId = null, myIdx = null, roomRef = null, selectedIndices = [], isAnimating = false;
-        const audio = { liar: () => playTone(600, 0.4), shot: () => playGunshot(), safe: () => playEmptyClick(), heartbeat: (rate) => playTone(55, 0.12, rate) };
+        const audio = { liar: () => playTone(600, 0.4), shot: () => playGunshot(), safe: () => playTone(440, 0.2), heartbeat: (rate) => playTone(55, 0.12, rate) };
 
         function playGunshot() { try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gT = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(180, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.15); gT.gain.setValueAtTime(1.8, ctx.currentTime); gT.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25); osc.connect(gT); gT.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.25); } catch(e){} }
-        
-        function playEmptyClick() { try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'sine'; osc.frequency.setValueAtTime(1200, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05); gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05); osc.connect(gain); gain.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.05); } catch(e){} }
 
         async function handleRoomAction(action) {
             const rid = document.getElementById('input-room-id').value.trim().toUpperCase();
@@ -174,7 +175,7 @@
             const ref = db.ref('rooms/' + rid);
             const snap = await ref.once('value');
             const data = snap.val();
-            // 自動重置離線房
+            // 自動重置離線房間
             const isEmpty = !data || !data.players || data.players.every(p => !p.isJoined);
             if (action === 'create') {
                 if (!isEmpty) { alert("Room Active."); return; }
@@ -219,15 +220,15 @@
                     const target = ['Q', 'K', 'A'][Math.floor(Math.random()*3)];
                     const joined = data.players.filter(p=>p.isJoined);
                     const deck = [];
-                    // 動態牌組
+                    // 維持 6Q 6K 6A 2J 比例，隨人數擴充
                     const mult = joined.length > 4 ? 1.5 : 1;
                     ['Q','K','A'].forEach(v => { for(let i=0; i<6*mult; i++) deck.push({ v, s: SUITS[i%4], isDevil: false }); });
                     for(let i=0; i<2*mult; i++) deck.push({ v: 'J', s: '🃏', isDevil: false });
                     const devilIdx = deck.map((c,i) => c.v === target ? i : -1).filter(i=>i!==-1);
                     if(devilIdx.length > 0) deck[devilIdx[Math.floor(Math.random()*devilIdx.length)]].isDevil = true;
                     const shuffled = deck.sort(() => Math.random() - 0.5);
-                    const aliveIdx = data.players.map((p,i) => (p.isJoined && !p.isDead) ? i : -1).filter(i=>i!==-1);
-                    const starter = aliveIdx[Math.floor(Math.random()*aliveIdx.length)];
+                    const alive = data.players.map((p,i) => (p.isJoined && !p.isDead) ? i : -1).filter(i=>i!==-1);
+                    const starter = alive[Math.floor(Math.random()*alive.length)];
                     data.players.forEach((p, i) => { if(p.isJoined && !p.isDead) { p.hand = shuffled.splice(0, 5); if(!p.chamber || p.chamber.length === 0) { p.chamber = [0,0,0,0,0,0]; p.chamber[Math.floor(Math.random()*6)] = 1; p.bulletIdx = 0; } } });
                     data.state = 'PLAYING'; data.targetCard = target; data.currentTurn = starter; data.starterIdx = starter; data.lastPlayer = -1; data.lastPlayed = [];
                     roomRef.set(data);
@@ -239,12 +240,14 @@
             if(data.state === 'LOBBY') return;
             document.getElementById('setup-screen').style.display = 'none';
             document.getElementById('game-screen').style.display = 'flex';
-            const isMyTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
-            document.getElementById('main-body').className = isMyTurn ? 'active-turn' : '';
+            const myTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
+            document.getElementById('main-body').className = myTurn ? 'active-turn' : '';
+
             if(data.state === 'ANIMATING') { document.getElementById('target-display').innerText = ['Q','K','A'][Math.floor(Date.now()/100)%3]; return; }
             document.getElementById('target-display').innerText = data.targetCard;
             document.getElementById('stack-msg').innerText = `TABLE: ${data.lastPlayed ? data.lastPlayed.length : 0} CARDS`;
             document.getElementById('btn-play').innerText = `PLAY (${selectedIndices.length})`;
+
             if(data.starterIdx !== -1) {
                 let seq = []; const joined = data.players.map((p,i)=>p.isJoined?i:-1).filter(i=>i!==-1);
                 for(let i=0; i<6; i++) {
@@ -254,29 +257,46 @@
                 }
                 document.getElementById('sequence-bar').innerHTML = seq.join(' ➔ ');
             }
-            const grid = document.getElementById('player-grid'); grid.innerHTML = '';
-            data.players.forEach((p, i) => { if(!p.isJoined) return; const div = document.createElement('div'); div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`; div.innerHTML = `<div style="font-size:1.6rem">${p.emoji}</div><div style="font-size:0.75rem; font-weight:900;">${p.name}</div><div style="font-size:0.5rem; color:#f44;">${p.bulletIdx}/6 SPENT</div>`; if(p.isDead) div.innerHTML += `<div class="out-stamp">OUT</div>`; grid.appendChild(div); });
 
-            // --- 終極修正：橫向大間距排開 ---
+            const grid = document.getElementById('player-grid'); grid.innerHTML = '';
+            data.players.forEach((p, i) => { 
+                if(!p.isJoined) return; 
+                const div = document.createElement('div'); div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`;
+                div.innerHTML = `<div style="font-size:2rem">${p.emoji}</div><div style="font-size:0.75rem; font-weight:900;">${p.name}</div><div style="font-size:0.5rem; color:#f44;">${p.bulletIdx}/6 SPENT</div>`;
+                if(p.isDead) div.innerHTML += `<div class="out-badge">OUT</div>`;
+                grid.appendChild(div);
+            });
+
+            // 手牌邏輯：原地留白
             const me = data.players[myIdx]; const handDiv = document.getElementById('my-hand'); handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
-                const total = 5; const hasSelected = selectedIndices.length > 0; const spacing = (handDiv.clientWidth < 420) ? 60 : 90;
+                const total = 5; 
+                const hasSelected = selectedIndices.length > 0;
+                const spacing = (handDiv.clientWidth < 420) ? 60 : 90;
+
                 me.hand.forEach((card, i) => {
-                    const isSel = selectedIndices.includes(i); const cDiv = document.createElement('div');
+                    const isSel = selectedIndices.includes(i);
+                    const cDiv = document.createElement('div');
                     const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSel?'selected':''} ${hasSelected && !isSel ? 'unfocused' : ''}`;
+                    
                     if (isSel) {
-                        // 【計算選中區位置：不受原始索引干擾】
+                        // 【重點：選中後水平排開絕對不重疊】
                         const sOrder = selectedIndices.indexOf(i); 
                         const sCount = selectedIndices.length;
-                        const spreadX = (sOrder - (sCount - 1) / 2) * 135; // 加大間距到 135px
-                        cDiv.style.transform = `translateX(${spreadX}px) rotate(0deg) scale(1.25)`;
-                        cDiv.style.bottom = "160px"; cDiv.style.zIndex = 1000 + sOrder;
+                        const spreadX = (sOrder - (sCount - 1) / 2) * 110; 
+                        cDiv.style.transform = `translateX(${spreadX}px) rotate(0deg) scale(1.2)`;
+                        cDiv.style.bottom = "160px";
+                        cDiv.style.zIndex = 1000 + sOrder;
                     } else {
-                        const offsetX = (i - 2) * spacing; const rotate = (i - 2) * 10;
+                        // 【原地留白：固定座標】
+                        const offsetX = (i - 2) * spacing; 
+                        const rotate = (i - 2) * 10;
                         cDiv.style.transform = `translateX(${offsetX}px) rotate(${rotate}deg)`;
-                        cDiv.style.bottom = "15px"; cDiv.style.zIndex = 100 + i;
+                        cDiv.style.bottom = "15px";
+                        cDiv.style.zIndex = 100 + i;
                     }
+
                     cDiv.innerHTML = `<div>${card.v}</div><div style="font-size:1.8rem; align-self:center;">${card.s}</div><div style="transform:rotate(180deg)">${card.v}</div>`;
                     cDiv.onclick = () => { if(isSel) selectedIndices = selectedIndices.filter(x => x !== i); else { if(card.isDevil && selectedIndices.length > 0) return; if(!card.isDevil && selectedIndices.some(idx => me.hand[idx].isDevil)) return; if(selectedIndices.length < 3) selectedIndices.push(i); } syncGame(data); };
                     handDiv.appendChild(cDiv);
@@ -293,17 +313,14 @@
             overlay.style.display = 'flex';
             for(let vIdx of shooting.victims) {
                 document.getElementById('exe-avatar').innerText = ROLES[vIdx].emoji;
-                status.innerText = "TARGETING"; status.style.color = "white"; status.className = ""; aim.className = "aim-ui"; blood.style.opacity = 0; audio.heartbeat(0.4); await new Promise(r => setTimeout(r, 1000));
+                status.innerText = "TARGETING"; status.style.color = "white"; aim.className = "aim-ui"; blood.style.opacity = 0; audio.heartbeat(0.4); await new Promise(r => setTimeout(r, 1000));
                 status.innerText = "LOCKING ON"; status.style.color = "yellow"; aim.classList.add('locking'); overlay.classList.add('shaking'); audio.heartbeat(1.2); await new Promise(r => setTimeout(r, 1200));
                 if(shooting.results[vIdx]) {
-                    playGunshot(); status.innerText = "ELIMINATED"; status.className = "text-eliminated"; status.style.color = ""; blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1800));
+                    playGunshot(); status.innerText = "ELIMINATED"; status.className = "text-eliminated"; blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1500));
                 } else {
-                    overlay.classList.remove('shaking'); aim.classList.remove('locking');
-                    aim.classList.add('safe-glow'); // 十字線轉綠
-                    audio.safe(); // 寫實空擊音
-                    status.innerText = "S A F E"; status.style.color = ""; status.className = "text-safe"; await new Promise(r => setTimeout(r, 1500));
+                    overlay.classList.remove('shaking'); aim.classList.remove('locking'); aim.classList.add('safe-glow'); audio.safe(); status.innerText = "S A F E"; status.className = "text-safe"; await new Promise(r => setTimeout(r, 1500));
                 }
-                aim.className = "aim-ui"; status.className = "";
+                aim.className = "aim-ui"; overlay.style.background = "#000";
             }
             overlay.style.display = 'none'; isAnimating = false; const snap = await roomRef.child('players').once('value');
             if(myIdx === snap.val().findIndex(p=>p.isJoined)) { roomRef.child('shooting').remove(); setTimeout(() => masterAction(), 500); }
@@ -332,7 +349,7 @@
         }
         function getNextAlive(players, current) { let next = (current + 1) % 6; while(!players[next].isJoined || players[next].isDead) next = (next + 1) % 6; return next; }
         function confirmReset(type) { if(confirm(`Reset?`)) { if(type === 'GAME') { roomRef.update({ state: 'LOBBY', lastPlayed: [], shooting: null }); location.reload(); } else masterAction(); } }
-        function playTone(f, d, rate = 1) { try { const ctx = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d); o.connect(g); g.connect(c.destination); o.start(); o.stop(ctx.currentTime + d); } } catch(e){} }
+        function playTone(f, d, rate = 1) { try { const ctx = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + d); } } catch(e){} }
     </script>
 </body>
 </html>
