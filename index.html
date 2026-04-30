@@ -55,6 +55,7 @@
         .card-container { flex: 1; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; overflow: visible; }
         .card { width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 10px; color: #111; font-weight: 900; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; position: absolute; left: 50%; bottom: 15px; margin-left: calc(var(--card-w) / -2); transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), bottom 0.4s, opacity 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid #ccc; z-index: 10; cursor: pointer; }
 
+        /* 選中卡片：上層水平橫向排開 */
         .card.selected { 
             bottom: 160px !important; transform: rotate(0deg) scale(1.25) !important;
             z-index: 500 !important; border: 3px solid var(--gold); 
@@ -71,10 +72,10 @@
         .btn-play { background: var(--gold); color: #000; box-shadow: 0 4px 0 #8a6d3b; }
         .btn-liar { background: #8b0000; color: #fff; box-shadow: 0 4px 0 #400; }
 
-        /* --- 處決 UI 與十字準星 (視覺修復) --- */
+        /* --- 處決 UI 與準星 (修復轉綠效果) --- */
         #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
         .aim-ui { width: 220px; height: 220px; border: 4px solid #ff0000; border-radius: 50%; position: relative; box-shadow: 0 0 30px rgba(255,0,0,0.5); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        /* 十字準星線 */
+        /* 十字絲 */
         .aim-ui::before, .aim-ui::after { content: ''; position: absolute; background: #ff0000; box-shadow: 0 0 5px #f00; transition: 0.3s; }
         .aim-ui::before { width: 2px; height: 100%; left: 50%; transform: translateX(-50%); }
         .aim-ui::after { height: 2px; width: 100%; top: 50%; transform: translateY(-50%); }
@@ -166,14 +167,14 @@
 
         function playGunshot() { try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gT = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(180, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.15); gT.gain.setValueAtTime(1.8, ctx.currentTime); gT.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25); osc.connect(gT); gT.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.25); } catch(e){} }
         
-        // 模擬金屬擊發空倉的咔噠聲
+        // 寫實金屬空槍聲
         function playEmptyClick() {
             try {
                 const ctx = new AudioContext();
                 const osc = ctx.createOscillator(); const gain = ctx.createGain();
-                osc.type = 'sine'; osc.frequency.setValueAtTime(1600, ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(600, ctx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.6, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+                osc.type = 'sine'; osc.frequency.setValueAtTime(1200, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.5, ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
                 osc.connect(gain); gain.connect(ctx.destination);
                 osc.start(); osc.stop(ctx.currentTime + 0.05);
             } catch(e){}
@@ -187,6 +188,7 @@
             const ref = db.ref('rooms/' + rid);
             const snap = await ref.once('value');
             const data = snap.val();
+            // 自動清理離線房
             const isEmpty = !data || !data.players || data.players.every(p => !p.isJoined);
             if (action === 'create') {
                 if (!isEmpty) { alert("Room Active."); return; }
@@ -203,8 +205,7 @@
             document.getElementById('setup-screen').style.display = 'flex';
             document.getElementById('room-tag').innerText = `ROOM: ${rid}`;
             roomRef.on('value', snap => {
-                const data = snap.val(); if(!data) return;
-                updateSetupUI(data); if(myIdx !== null) syncGame(data);
+                const d = snap.val(); if(!d) return; updateSetupUI(d); if(myIdx !== null) syncGame(d);
             });
         }
 
@@ -252,10 +253,12 @@
             document.getElementById('game-screen').style.display = 'flex';
             const isMyTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
             document.getElementById('main-body').className = isMyTurn ? 'active-turn' : '';
+
             if(data.state === 'ANIMATING') { document.getElementById('target-display').innerText = ['Q','K','A'][Math.floor(Date.now()/100)%3]; return; }
             document.getElementById('target-display').innerText = data.targetCard;
             document.getElementById('stack-msg').innerText = `TABLE: ${data.lastPlayed ? data.lastPlayed.length : 0} CARDS`;
             document.getElementById('btn-play').innerText = `PLAY (${selectedIndices.length})`;
+
             if(data.starterIdx !== -1) {
                 let seq = []; const joined = data.players.map((p,i)=>p.isJoined?i:-1).filter(i=>i!==-1);
                 for(let i=0; i<6; i++) {
@@ -265,6 +268,7 @@
                 }
                 document.getElementById('sequence-bar').innerHTML = seq.join(' ➔ ');
             }
+
             const grid = document.getElementById('player-grid'); grid.innerHTML = '';
             data.players.forEach((p, i) => { 
                 if(!p.isJoined) return; 
@@ -273,6 +277,7 @@
                 if(p.isDead) div.innerHTML += `<div class="out-stamp">OUT</div>`;
                 grid.appendChild(div);
             });
+
             const me = data.players[myIdx]; const handDiv = document.getElementById('my-hand'); handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
                 const total = 5; const hasSelected = selectedIndices.length > 0; const spacing = (handDiv.clientWidth < 420) ? 60 : 90;
@@ -281,10 +286,10 @@
                     const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSel?'selected':''} ${hasSelected && !isSel ? 'unfocused' : ''}`;
                     if (isSel) {
-                        // 【關鍵修復：絕對水平橫向排開】
+                        // 【關鍵修復：依據選中順序橫排，絕對不重疊】
                         const sOrder = selectedIndices.indexOf(i); 
                         const sCount = selectedIndices.length;
-                        const spreadX = (sOrder - (sCount - 1) / 2) * 140; 
+                        const spreadX = (sOrder - (sCount - 1) / 2) * 135; // 間距加大確保看清花色
                         cDiv.style.transform = `translateX(${spreadX}px) rotate(0deg) scale(1.25)`;
                         cDiv.style.bottom = "160px"; cDiv.style.zIndex = 1000 + sOrder;
                     } else {
@@ -308,17 +313,24 @@
             overlay.style.display = 'flex';
             for(let vIdx of shooting.victims) {
                 document.getElementById('exe-avatar').innerText = ROLES[vIdx].emoji;
-                status.innerText = "TARGETING"; status.style.color = "white"; status.className = ""; aim.className = "aim-ui"; blood.style.opacity = 0; audio.heartbeat(0.4); await new Promise(r => setTimeout(r, 1000));
+                
+                // 1. 對準
+                status.innerText = "TARGETING"; status.style.color = "white"; 
+                status.className = ""; aim.className = "aim-ui"; blood.style.opacity = 0; audio.heartbeat(0.4); await new Promise(r => setTimeout(r, 1000));
+                
+                // 2. 鎖定 (心跳快)
                 status.innerText = "LOCKING ON"; status.style.color = "yellow"; aim.classList.add('locking'); overlay.classList.add('shaking'); audio.heartbeat(1.2); await new Promise(r => setTimeout(r, 1200));
+                
+                // 3. 判定
                 if(shooting.results[vIdx]) {
-                    playGunshot(); status.innerText = "ELIMINATED"; status.className = "text-eliminated"; status.style.color = ""; blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1800));
+                    playGunshot(); status.innerText = "ELIMINATED"; status.className = "text-eliminated"; status.style.color = "";
+                    blood.style.opacity = 1; overlay.style.background = "rgba(139, 0, 0, 0.4)"; setTimeout(() => overlay.style.background = "#000", 200); await new Promise(r => setTimeout(r, 1800));
                 } else {
+                    // --- 強勢轉綠修復 ---
                     overlay.classList.remove('shaking'); aim.classList.remove('locking');
-                    aim.classList.add('safe-glow'); // 準星轉綠
-                    audio.safe(); // 空彈咔噠聲
-                    status.innerText = "S A F E"; 
-                    status.style.color = ""; // 清除 yellow inline style
-                    status.className = "text-safe"; // 綠色字體
+                    aim.classList.add('safe-glow'); // 十字線與圈圈轉綠
+                    audio.safe(); 
+                    status.innerText = "S A F E"; status.style.color = ""; status.className = "text-safe"; 
                     await new Promise(r => setTimeout(r, 1500));
                 }
                 aim.className = "aim-ui"; status.className = "";
