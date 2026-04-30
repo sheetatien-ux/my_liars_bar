@@ -13,7 +13,7 @@
             --gold: #d4af37; --gold-l: #f9e29f; --gold-d: #8a6d3b;
             --bg: #050505; --panel: rgba(20, 20, 25, 0.95);
             --border: rgba(212, 175, 55, 0.3);
-            --card-w: 70px; --card-h: 110px;
+            --card-w: 68px; --card-h: 105px;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
@@ -25,94 +25,87 @@
         }
 
         body { display: flex; flex-direction: column; }
-
         body::after { content: ""; position: fixed; inset: 0; opacity: 0.03; pointer-events: none; background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); z-index: 0; }
 
         /* --- 登入畫面 --- */
         .lobby-screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; align-items: center; justify-content: center; }
         .lobby-container { background: var(--panel); border: 1px solid var(--gold); border-radius: 30px; padding: 30px; width: 90%; max-width: 380px; text-align: center; }
-        .lobby-logo { font-family: 'Cinzel'; font-size: 2.5rem; color: var(--gold); margin-bottom: 25px; letter-spacing: 3px; }
+        .lobby-logo { font-family: 'Cinzel'; font-size: 2.2rem; color: var(--gold); margin-bottom: 25px; }
         .lobby-input { width: 100%; padding: 12px; background: #000; border: 1px solid #333; border-radius: 12px; color: var(--gold); margin-bottom: 15px; text-align: center; font-size: 1rem; }
         .main-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.1rem; cursor: pointer; }
 
-        /* --- 遊戲主介面 結構優化 --- */
-        .game-screen { display: none; flex-direction: column; height: 100%; position: relative; z-index: 10; }
+        /* --- 遊戲主介面 佈局核心 --- */
+        .game-screen { display: none; flex-direction: column; height: 100%; width: 100%; position: relative; z-index: 10; }
         
-        .header-panel { padding: 10px; text-align: center; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-        #target-display { font-family: 'Cinzel'; font-size: 2.5rem; color: var(--gold); font-weight: 900; line-height: 1; }
-        .sequence-bar { font-size: 0.6rem; color: #777; background: rgba(0,0,0,0.6); padding: 4px; border-radius: 20px; margin: 5px auto; width: 90%; display: flex; justify-content: center; gap: 6px; border: 1px solid var(--border); }
+        .header-panel { padding: 5px 10px; text-align: center; border-bottom: 1px solid var(--border); flex-shrink: 0; background: #000; }
+        #target-display { font-family: 'Cinzel'; font-size: 2.2rem; color: var(--gold); font-weight: 900; line-height: 1; }
+        .sequence-bar { font-size: 0.55rem; color: #777; background: rgba(0,0,0,0.6); padding: 4px; border-radius: 20px; margin: 4px auto; width: 85%; display: flex; justify-content: center; gap: 6px; border: 1px solid var(--border); }
+        .seq-item.active { color: var(--gold-bright); font-weight: 900; text-decoration: underline; }
 
-        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; flex-shrink: 0; }
-        .p-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 12px; padding: 8px; text-align: center; min-height: 60px; display: flex; flex-direction: column; justify-content: center; }
-        .p-box.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.1); }
+        /* 縮小玩家頭像高度 */
+        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 6px; flex-shrink: 0; }
+        .p-box { background: rgba(255,255,255,0.03); border: 1px solid var(--border); border-radius: 10px; padding: 6px; text-align: center; min-height: 55px; display: flex; flex-direction: column; justify-content: center; position: relative; }
+        .p-box.active { border-color: var(--gold); box-shadow: 0 0 10px var(--gold); }
         .p-box.dead { opacity: 0.2; }
 
-        /* --- 核心：物理固定手牌區 --- */
+        /* --- 改進版手牌與抽走留白區 --- */
         #hand-area { 
-            flex: 1; /* 自動填滿剩餘高度 */
-            display: flex; flex-direction: column; justify-content: space-between;
-            background: linear-gradient(to top, #000 80%, #0d0d0f 100%);
-            border-top: 1px solid var(--gold); border-radius: 30px 30px 0 0;
-            padding: 5px; position: relative;
+            flex: 1; /* 自動佔據中間所有剩餘空間 */
+            display: flex; flex-direction: column; 
+            background: linear-gradient(to top, #000 70%, #0d0d0f 100%);
+            border-top: 1.5px solid var(--gold); border-radius: 30px 30px 0 0;
+            padding: 5px; position: relative; min-height: 0;
         }
+
+        #stack-msg { text-align: center; color: var(--gold); font-size: 0.75rem; font-weight: 900; margin-top: 5px; flex-shrink: 0; }
 
         .card-container { 
             flex: 1; position: relative; width: 100%; 
-            display: flex; justify-content: center; align-items: center;
-            overflow: visible; /* 允許牌向上飛 */
+            display: flex; justify-content: center; align-items: center; /* 改為居中，透過 JS 手動偏移 */
+            overflow: visible; 
         }
 
         .card { 
             width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 8px; 
-            color: #111; font-weight: 900; padding: 6px; display: flex; flex-direction: column; justify-content: space-between;
+            color: #111; font-weight: 900; padding: 5px; display: flex; flex-direction: column; justify-content: space-between;
             position: absolute; left: 50%;
             margin-left: calc(var(--card-w) / -2);
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), bottom 0.4s, opacity 0.3s;
+            transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), opacity 0.3s;
             box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid #ccc;
             z-index: 10; cursor: pointer;
         }
 
-        /* 選中狀態：上升到固定高度，不影響水平位置 */
+        /* 選中狀態：上升 150px，完全離開原本區域，水平位置固定 */
         .card.selected { 
-            transform: translateY(-90px) rotate(0deg) scale(1.15) !important;
+            transform: translateY(-150px) rotate(0deg) scale(1.3) !important;
             z-index: 500 !important; 
             border: 3px solid var(--gold); 
-            box-shadow: 0 15px 40px rgba(212, 175, 55, 0.7);
+            box-shadow: 0 20px 50px rgba(212, 175, 55, 0.7);
         }
 
-        .card.unfocused { opacity: 0.35; transform: scale(0.9); }
+        .card.unfocused { opacity: 0.3; filter: grayscale(0.5); transform: scale(0.85); }
         .card.red { color: #d00; }
         .card.devil { border: 2.5px solid #f00 !important; animation: devil-pulse 1s infinite alternate; }
         @keyframes devil-pulse { from { box-shadow: 0 0 5px #f00; } to { box-shadow: 0 0 25px #f00; } }
+        .card-flying { transform: translateY(-800px) scale(0) rotate(45deg) !important; opacity: 0 !important; }
 
-        /* --- 按鈕控制區：固定在底部 --- */
+        /* --- 底部按鈕區：強制鎖定在底部 --- */
         .btn-group { 
-            display: flex; gap: 10px; padding: 10px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
-            background: rgba(0,0,0,0.8); flex-shrink: 0; z-index: 600; 
+            display: flex; gap: 10px; padding: 10px; 
+            padding-bottom: calc(10px + env(safe-area-inset-bottom)); 
+            background: rgba(0,0,0,0.9); flex-shrink: 0; z-index: 600; 
         }
-        .action-btn { flex: 1; padding: 15px; border-radius: 12px; border: none; font-weight: 900; font-size: 1.1rem; font-family: 'Cinzel'; cursor: pointer; }
+        .action-btn { flex: 1; padding: 16px; border-radius: 12px; border: none; font-weight: 900; font-size: 1.1rem; font-family: 'Cinzel'; cursor: pointer; color: #fff; }
         .btn-play { background: var(--gold); color: #000; }
         .btn-liar { background: #8b0000; color: #fff; }
 
-        /* --- 手機小螢幕適配 --- */
-        @media (max-height: 700px) {
-            :root { --card-w: 60px; --card-h: 90px; }
-            #target-display { font-size: 2rem; }
-            .lobby-logo { font-size: 2rem; }
-            .p-box { min-height: 50px; padding: 4px; }
-            .card.selected { transform: translateY(-70px) rotate(0deg) scale(1.1) !important; }
-        }
-
         /* 處決層 */
         #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
-        .aim-ui { width: 200px; height: 220px; border: 3px solid #f00; border-radius: 50%; position: relative; }
         .shaking { animation: shake 0.1s infinite; }
         @keyframes shake { 0%, 100% { transform: translate(0,0); } 50% { transform: translate(-2px, 2px); } }
     </style>
 </head>
-<body>
-
-    <div class="my-turn-glow"></div>
+<body id="main-body">
 
     <!-- 1. 奢華大廳 -->
     <div id="lobby-screen" class="lobby-screen">
@@ -121,15 +114,17 @@
             <input type="text" id="input-room-id" class="lobby-input" placeholder="ROOM ID">
             <input type="password" id="input-room-pw" class="lobby-input" placeholder="4-PIN" maxlength="4">
             <button class="main-btn" onclick="handleRoomAction('join')">JOIN BAR</button>
-            <button class="main-btn" style="background:#222; color:var(--gold); border:1px solid var(--gold); margin-top:10px;" onclick="handleRoomAction('create')">HOST TABLE</button>
+            <button class="main-btn" style="background:#222; color:var(--gold); border:1px solid var(--gold); margin-top:10px;" onclick="handleRoomAction('create')">HOST NEW TABLE</button>
         </div>
     </div>
 
     <!-- 2. 選角介面 -->
     <div id="setup-screen" class="setup-screen" style="display:none;">
-        <h2 style="color:var(--gold); font-family:'Cinzel'; margin-bottom:20px; font-size:1.5rem;">SELECT AVATAR</h2>
-        <div id="role-grid" class="role-grid"></div>
-        <button class="main-btn" id="start-trigger-btn" style="display:none; max-width:300px; margin-top:30px; background:#fff; color:#000;" onclick="masterAction()">🎲 Shuffle & Deal</button>
+        <div class="lobby-container" style="max-width: 450px;">
+            <h2 style="color:var(--gold); font-family:'Cinzel'; margin-bottom:15px; font-size:1.2rem;">SELECT AVATAR</h2>
+            <div id="role-grid" class="role-grid"></div>
+            <button class="main-btn" id="start-trigger-btn" style="display:none; margin-top:20px; background:#fff; color:#000;" onclick="masterAction()">🎲 Shuffle & Deal</button>
+        </div>
     </div>
 
     <!-- 3. 遊戲畫面 -->
@@ -141,19 +136,19 @@
             </div>
             <div id="target-display">?</div>
             <div class="sequence-bar" id="sequence-bar">Waiting...</div>
-            <div style="display:flex; gap:5px; padding:0 10px;">
-                <button class="main-btn" style="margin:0; flex:1; padding:5px; font-size:0.6rem;" onclick="confirmReset('GAME')">🔄 RESET</button>
-                <button class="main-btn" style="margin:0; flex:1; padding:5px; font-size:0.6rem; background:#444; color:#fff;" onclick="confirmReset('DEAL')">🃏 REDEAL</button>
+            <div style="display:flex; gap:10px; padding:2px 5px;">
+                <button class="main-btn" style="margin:0; flex:1; padding:4px; font-size:0.6rem; border-radius:8px;" onclick="confirmReset('GAME')">🔄 RESET</button>
+                <button class="main-btn" style="margin:0; flex:1; padding:4px; font-size:0.6rem; background:#444; color:#fff; border-radius:8px;" onclick="confirmReset('DEAL')">🃏 REDEAL</button>
             </div>
         </div>
 
         <div class="player-grid" id="player-grid"></div>
 
         <div id="hand-area">
-            <div id="stack-msg" style="text-align:center; color:var(--gold); font-size:0.8rem; font-weight:900;">TABLE: 0 CARDS</div>
+            <div id="stack-msg">TABLE: 0 CARDS</div>
             <!-- 卡片容器 -->
             <div class="card-container" id="my-hand"></div>
-            <!-- 底端按鈕組 -->
+            <!-- 底部按鈕區 -->
             <div class="btn-group">
                 <button id="btn-liar" class="action-btn btn-liar" onclick="callLiar()">LIAR!</button>
                 <button id="btn-play" class="action-btn btn-play" onclick="playCards()">PLAY (0)</button>
@@ -161,11 +156,10 @@
         </div>
     </div>
 
+    <!-- 4. 處決動畫 -->
     <div id="execution-overlay">
-        <div id="blood-vignette" style="position:absolute; inset:0; background:radial-gradient(circle, transparent 20%, rgba(150,0,0,0.8) 100%); opacity:0; transition:0.3s;"></div>
-        <div id="exe-avatar" style="font-size: 7rem; margin-bottom: 20px;"></div>
-        <div id="aim-ui" class="aim-ui"></div>
-        <div id="exe-status" style="font-family:'Cinzel'; font-size: 2.5rem; margin-top: 30px; font-weight:900;">TARGETING</div>
+        <div id="exe-avatar" style="font-size: 8rem; margin-bottom: 20px;"></div>
+        <div id="exe-status" style="font-family:'Cinzel'; font-size: 2.2rem; font-weight:900;">TARGETING</div>
     </div>
 
     <script>
@@ -183,8 +177,12 @@
 
         const ROLES = [{id:0,name:"FOX",emoji:"🦊"},{id:1,name:"LEOPARD",emoji:"🐆"},{id:2,name:"SLOTH",emoji:"🦥"},{id:3,name:"ZEBRA",emoji:"🦓"},{id:4,name:"BEAR",emoji:"🐻"},{id:5,name:"WOLF",emoji:"🐺"}];
         const SUITS = ['♠','♥','♦','♣'];
-        let currentRoomId = null, myIdx = null, roomRef = null, selectedIndices = [], isAnimating = false;
+        
+        let currentRoomId = null; let myIdx = null; let roomRef = null; let selectedIndices = []; let isAnimating = false;
         const audio = { liar: () => playTone(600, 0.4), shot: () => playGunshot(), safe: () => playTone(440, 0.2), click: () => playTone(1000, 0.05), heartbeat: (rate) => playTone(55, 0.12, rate) };
+
+        // 使用原本穩定的槍聲
+        function playGunshot() { try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gT = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(180, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.15); gT.gain.setValueAtTime(1.8, ctx.currentTime); gT.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25); osc.connect(gT); gT.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.25); } catch(e){} }
 
         async function handleRoomAction(action) {
             const rid = document.getElementById('input-room-id').value.trim().toUpperCase();
@@ -192,10 +190,8 @@
             if (!rid || rpw.length !== 4) return;
             const ref = db.ref('rooms/' + rid);
             const snap = await ref.once('value');
-            if (action === 'create') {
-                if (snap.val()) { alert("Room busy."); return; }
-                await ref.set({ password: rpw, state: 'LOBBY', players: ROLES.map(r => ({ ...r, isJoined: false, isDead: true, chamber: [], bulletIdx: 0, hand: [] })), targetCard: '?', currentTurn: -1, lastPlayer: -1, lastPlayed: [] });
-            }
+            if (action === 'create' && snap.val()) { alert("Room busy."); return; }
+            if (action === 'create') await ref.set({ password: rpw, state: 'LOBBY', players: ROLES.map(r => ({ ...r, isJoined: false, isDead: true, chamber: [], bulletIdx: 0, hand: [] })), targetCard: '?', currentTurn: -1, lastPlayer: -1, lastPlayed: [] });
             enterSetup(rid);
         }
 
@@ -203,7 +199,6 @@
             currentRoomId = rid; roomRef = db.ref('rooms/' + rid);
             document.getElementById('lobby-screen').style.display = 'none';
             document.getElementById('setup-screen').style.display = 'flex';
-            document.getElementById('room-tag').innerText = `ROOM: ${rid}`;
             roomRef.on('value', snap => {
                 const data = snap.val(); if(!data) return;
                 updateSetupUI(data); if(myIdx !== null) syncGame(data);
@@ -231,16 +226,16 @@
                 const data = s.val(); roomRef.update({ state: 'ANIMATING' });
                 setTimeout(() => {
                     const target = ['Q', 'K', 'A'][Math.floor(Math.random()*3)];
-                    let deck = [];
+                    const deck = [];
                     ['Q','K','A'].forEach(v => { for(let i=0; i<6; i++) deck.push({ v, s: SUITS[i%4], isDevil: false }); });
                     for(let i=0; i<2; i++) deck.push({ v: 'J', s: '🃏', isDevil: false });
                     const devilIdx = deck.map((c,i) => (c.v !== 'J') ? i : -1).filter(i=>i!==-1);
                     deck[devilIdx[Math.floor(Math.random()*devilIdx.length)]].isDevil = true;
-                    deck = deck.sort(() => Math.random() - 0.5);
+                    const shuffled = deck.sort(() => Math.random() - 0.5);
                     const alive = data.players.map((p,i) => (p.isJoined && !p.isDead) ? i : -1).filter(i=>i!==-1);
                     const starter = alive[Math.floor(Math.random()*alive.length)];
-                    data.players.forEach((p, i) => { if(p.isJoined && !p.isDead) { p.hand = deck.splice(0, 5); if(!p.chamber || p.chamber.length === 0) { p.chamber = [0,0,0,0,0,0]; p.chamber[Math.floor(Math.random()*6)] = 1; p.bulletIdx = 0; } } });
-                    data.state = 'PLAYING'; data.targetCard = target; data.currentTurn = starter; data.starterIdx = starter; data.lastPlayer = -1; data.lastPlayed = []; data.log = `Table: ${target}.`;
+                    data.players.forEach((p, i) => { if(p.isJoined && !p.isDead) { p.hand = shuffled.splice(0, 5); if(!p.chamber || p.chamber.length === 0) { p.chamber = [0,0,0,0,0,0]; p.chamber[Math.floor(Math.random()*6)] = 1; p.bulletIdx = 0; } } });
+                    data.state = 'PLAYING'; data.targetCard = target; data.currentTurn = starter; data.starterIdx = starter; data.lastPlayer = -1; data.lastPlayed = [];
                     roomRef.set(data);
                 }, 2000);
             });
@@ -264,13 +259,13 @@
             }
 
             const grid = document.getElementById('player-grid'); grid.innerHTML = '';
-            data.players.forEach((p, i) => { if(!p.isJoined) return; const div = document.createElement('div'); div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`; div.innerHTML = `<div style="font-size:1.5rem">${p.emoji}</div><div style="font-size:0.7rem; font-weight:900;">${p.name}</div><div style="font-size:0.5rem; color:#f44;">${p.bulletIdx}/6 SPENT</div>`; grid.appendChild(div); });
+            data.players.forEach((p, i) => { if(!p.isJoined) return; const div = document.createElement('div'); div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`; div.innerHTML = `<div style="font-size:1.6rem">${p.emoji}</div><div style="font-size:0.75rem; font-weight:900;">${p.name}</div><div style="font-size:0.5rem; color:#f44;">${p.bulletIdx}/6 SPENT</div>`; grid.appendChild(div); });
 
-            // --- 絕對留白手牌邏輯 ---
+            // --- 修復：原地留白邏輯 ---
             const me = data.players[myIdx]; const handDiv = document.getElementById('my-hand'); handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
-                const total = 5; // 假設初始發5張，用於固定插槽
                 const hasSel = selectedIndices.length > 0;
+                // 固定間距，不受選中數量影響
                 const spacing = (handDiv.clientWidth < 420) ? 55 : 85;
 
                 me.hand.forEach((card, i) => {
@@ -279,10 +274,13 @@
                     const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSel?'selected':''} ${hasSel && !isSel ? 'unfocused' : ''}`;
                     
-                    // X 軸始終固定，選中時只上升
-                    const offsetX = (i - (total - 1) / 2) * spacing;
-                    cDiv.style.transform = `translateX(${offsetX}px) rotate(${isSel ? 0 : (i - (total - 1) / 2) * 8}deg)`;
-                    if(isSel) cDiv.style.bottom = "120px";
+                    // 水平 X 軸始終根據 i 固定，選中時只上升，原本位置直接空出來
+                    const offsetX = (i - 2) * spacing; // 強制以 5 張牌的中心點計算
+                    const rotate = isSel ? 0 : (i - 2) * 10;
+                    
+                    cDiv.style.transform = `translateX(${offsetX}px) rotate(${rotate}deg)`;
+                    // 選中時往上升 150px
+                    cDiv.style.bottom = isSel ? "160px" : "15px";
 
                     cDiv.innerHTML = `<div>${card.v}</div><div style="font-size:1.5rem; align-self:center;">${card.s}</div><div style="transform:rotate(180deg)">${card.v}</div>`;
                     cDiv.onclick = () => { if(isSel) selectedIndices = selectedIndices.filter(x => x !== i); else { if(card.isDevil && selectedIndices.length > 0) return; if(!card.isDevil && selectedIndices.some(idx => me.hand[idx].isDevil)) return; if(selectedIndices.length < 3) selectedIndices.push(i); } syncGame(data); };
@@ -326,7 +324,7 @@
 
         function callLiar() {
             audio.liar(); roomRef.once('value', s => {
-                const data = s.val(); const isLie = data.lastPlayed.some(c => c.v !== data.targetCard && c.v !== 'J' && !c.isDevil); const hasDevil = data.lastPlayed.some(c => c.isDevil);
+                const data = s.val(); const cards = data.lastPlayed; const isLie = cards.some(c => c.v !== data.targetCard && c.v !== 'J' && !c.isDevil); const hasDevil = cards.some(c => c.isDevil);
                 let victims = hasDevil ? data.players.map((p,i) => (p.isJoined && !p.isDead && i !== data.lastPlayer) ? i : -1).filter(i=>i!==-1) : (isLie ? [data.lastPlayer] : [myIdx]);
                 const results = {}; victims.forEach(v => { const p = data.players[v]; const hit = p.chamber[p.bulletIdx] === 1; results[v] = hit; p.bulletIdx++; if(hit) p.isDead = true; });
                 data.shooting = { victims, results }; roomRef.set(data);
@@ -334,7 +332,6 @@
         }
         function getNextAlive(players, current) { let next = (current + 1) % 6; while(!players[next].isJoined || players[next].isDead) next = (next + 1) % 6; return next; }
         function confirmReset(type) { if(confirm(`Reset?`)) { if(type === 'GAME') { roomRef.update({ state: 'LOBBY', lastPlayed: [], shooting: null }); location.reload(); } else masterAction(); } }
-        function playGunshot() { try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const g = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(180, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.15); g.gain.setValueAtTime(1.8, ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25); osc.connect(g); g.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.25); } catch(e){} }
         function playTone(f, d, r=1) { try { const ctx = new AudioContext(); const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + d); } catch(e){} }
     </script>
 </body>
