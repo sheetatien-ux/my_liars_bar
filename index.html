@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Liar's Bar - Royal Final Platinum Edition</title>
+    <title>Liar's Bar - Royal Final Edition</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
@@ -22,12 +22,12 @@
         body { display: flex; flex-direction: column; }
         body::after { content: ""; position: fixed; inset: 0; opacity: 0.04; pointer-events: none; background-image: url('https://www.transparenttextures.com/patterns/carbon-fibre.png'); }
 
-        /* --- 登入介面 --- */
+        /* --- 登入畫面 --- */
         .lobby-screen { position: fixed; inset: 0; z-index: 1000; background: var(--bg); display: flex; align-items: center; justify-content: center; }
         .lobby-container { background: var(--panel); border: 1px solid var(--gold); border-radius: 30px; padding: 35px; width: 92%; max-width: 380px; text-align: center; box-shadow: 0 30px 60px rgba(0,0,0,0.9); }
         .lobby-logo { font-family: 'Cinzel'; font-size: 2.5rem; color: var(--gold); margin-bottom: 25px; letter-spacing: 2px; }
         .lobby-input { width: 100%; padding: 14px; background: #000; border: 1px solid #444; border-radius: 12px; color: var(--gold); margin-bottom: 12px; text-align: center; font-size: 1rem; }
-        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.15rem; cursor: pointer; }
+        .main-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%); border: none; border-radius: 15px; color: #000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.15rem; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
 
         /* --- 選角介面 --- */
         .setup-screen { position: fixed; inset: 0; z-index: 500; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(20px); }
@@ -50,12 +50,12 @@
         .p-box.dead { filter: grayscale(1) brightness(0.6); opacity: 0.7; border-color: #555; }
         .out-stamp { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); color: #ff0000; font-family: 'Cinzel'; font-weight: 900; font-size: 1.6rem; transform: rotate(-15deg); border: 2px solid #ff0000; margin: 10px; border-radius: 5px; z-index: 5; }
 
-        /* --- 手牌佈局 --- */
+        /* --- 手牌與物理插槽佈局 --- */
         #hand-area { flex: 1; display: flex; flex-direction: column; justify-content: space-between; background: linear-gradient(to top, #000 80%, #0d0d0f 100%); border-top: 1.5px solid var(--gold); border-radius: 30px 30px 0 0; padding: 5px; position: relative; min-height: 0; }
         .card-container { flex: 1; position: relative; width: 100%; display: flex; justify-content: center; align-items: center; overflow: visible; }
         .card { width: var(--card-w); height: var(--card-h); background: #fff; border-radius: 10px; color: #111; font-weight: 900; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; position: absolute; left: 50%; bottom: 15px; margin-left: calc(var(--card-w) / -2); transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1), bottom 0.4s, opacity 0.3s; box-shadow: 0 5px 15px rgba(0,0,0,0.6); border: 1px solid #ccc; z-index: 10; cursor: pointer; }
 
-        /* 選中卡片：上層水平大間距橫排 (修復重疊) */
+        /* 選中卡片：上層水平大間距橫排 (解決重疊問題) */
         .card.selected { 
             bottom: 160px !important; transform: rotate(0deg) scale(1.25) !important;
             z-index: 500 !important; border: 3px solid var(--gold); 
@@ -72,7 +72,7 @@
         .btn-play { background: var(--gold); color: #000; box-shadow: 0 4px 0 #8a6d3b; }
         .btn-liar { background: #8b0000; color: #fff; box-shadow: 0 4px 0 #400; }
 
-        /* --- 處決 UI --- */
+        /* --- 處決 UI 與準星 --- */
         #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
         .aim-ui { width: 220px; height: 220px; border: 4px solid #ff0000; border-radius: 50%; position: relative; box-shadow: 0 0 30px rgba(255,0,0,0.5); transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .aim-ui::before, .aim-ui::after { content: ''; position: absolute; background: #ff0000; box-shadow: 0 0 5px #f00; transition: 0.3s; }
@@ -165,7 +165,7 @@
 
         function playGunshot() { try { const ctx = new AudioContext(); const osc = ctx.createOscillator(); const gT = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(180, ctx.currentTime); osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.15); gT.gain.setValueAtTime(1.8, ctx.currentTime); gT.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.25); osc.connect(gT); gT.connect(ctx.destination); osc.start(); osc.stop(ctx.currentTime + 0.25); } catch(e){} }
         
-        // 新增：寫實空槍咔噠聲
+        // 寫實金屬空擊聲
         function playEmptyClick() {
             try {
                 const ctx = new AudioContext();
@@ -251,10 +251,12 @@
             document.getElementById('game-screen').style.display = 'flex';
             const isMyTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
             document.getElementById('main-body').className = isMyTurn ? 'active-turn' : '';
+
             if(data.state === 'ANIMATING') { document.getElementById('target-display').innerText = ['Q','K','A'][Math.floor(Date.now()/100)%3]; return; }
             document.getElementById('target-display').innerText = data.targetCard;
             document.getElementById('stack-msg').innerText = `TABLE: ${data.lastPlayed ? data.lastPlayed.length : 0} CARDS`;
             document.getElementById('btn-play').innerText = `PLAY (${selectedIndices.length})`;
+
             if(data.starterIdx !== -1) {
                 let seq = []; const joined = data.players.map((p,i)=>p.isJoined?i:-1).filter(i=>i!==-1);
                 for(let i=0; i<6; i++) {
@@ -264,6 +266,7 @@
                 }
                 document.getElementById('sequence-bar').innerHTML = seq.join(' ➔ ');
             }
+
             const grid = document.getElementById('player-grid'); grid.innerHTML = '';
             data.players.forEach((p, i) => { 
                 if(!p.isJoined) return; 
@@ -272,6 +275,8 @@
                 if(p.isDead) div.innerHTML += `<div class="out-stamp">OUT</div>`;
                 grid.appendChild(div);
             });
+
+            // 手牌邏輯：原地留白 + 選中大間距
             const me = data.players[myIdx]; const handDiv = document.getElementById('my-hand'); handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
                 const total = 5; const hasSelected = selectedIndices.length > 0; const spacing = (handDiv.clientWidth < 420) ? 60 : 90;
@@ -287,7 +292,9 @@
                         cDiv.style.transform = `translateX(${spreadX}px) rotate(0deg) scale(1.25)`;
                         cDiv.style.bottom = "160px"; cDiv.style.zIndex = 1000 + sOrder;
                     } else {
-                        const offsetX = (i - 2) * spacing; const rotate = (i - 2) * 10;
+                        // 【原地留白：固定座標】
+                        const offsetX = (i - 2) * spacing; 
+                        const rotate = (i - 2) * 10;
                         cDiv.style.transform = `translateX(${offsetX}px) rotate(${rotate}deg)`;
                         cDiv.style.bottom = "15px"; cDiv.style.zIndex = 100 + i;
                     }
@@ -345,7 +352,7 @@
         }
         function getNextAlive(players, current) { let next = (current + 1) % 6; while(!players[next].isJoined || players[next].isDead) next = (next + 1) % 6; return next; }
         function confirmReset(type) { if(confirm(`Reset?`)) { if(type === 'GAME') { roomRef.update({ state: 'LOBBY', lastPlayed: [], shooting: null }); location.reload(); } else masterAction(); } }
-        function playTone(f, d, rate = 1) { try { const ctx = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d); o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + d); } } catch(e){} }
+        function playTone(f, d, rate = 1) { try { const ctx = new AudioContext(); if (rate > 1) { for(let i=0; i<rate*2.5; i++) { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + (i*0.25) + d); o.connect(g); g.connect(c.destination); o.start(c.currentTime + (i*0.25)); o.stop(c.currentTime + (i*0.25) + d); } } else { const o = ctx.createOscillator(); const g = ctx.createGain(); o.frequency.value = f; g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + d); o.connect(g); g.connect(c.destination); o.start(); o.stop(ctx.currentTime + d); } } catch(e){} }
     </script>
 </body>
 </html>
