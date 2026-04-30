@@ -3,116 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Liar's Bar Royal - Room Edition</title>
+    <title>Liar's Bar Royal - Extreme Edition</title>
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.1.3/firebase-database-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Noto+Sans+TC:wght@500;900&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #d4af37; --crimson: #8b0000; --bg: #050506; }
+        :root { --gold: #d4af37; --crimson: #8b0000; --bg: #050506; --red-glow: #ff0000; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; }
         body { background: var(--bg); color: white; font-family: 'Noto Sans TC', sans-serif; margin: 0; overflow: hidden; height: 100dvh; display: flex; flex-direction: column; }
 
-        /* --- 大廳畫面 --- */
-        .lobby-screen { position: fixed; inset: 0; background: radial-gradient(circle, #1a1a1c 0%, #050506 100%); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .lobby-card { background: #111; padding: 25px; border-radius: 15px; border: 1px solid var(--gold); width: 100%; max-width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: white; font-size: 1rem; text-align: center; }
-        .primary-btn { width: 100%; padding: 12px; background: var(--gold); border: none; border-radius: 8px; font-weight: 900; cursor: pointer; margin-top: 10px; }
-        .secondary-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid #666; color: #aaa; border-radius: 8px; margin-top: 10px; cursor: pointer; }
-
-        /* --- 角色選擇 --- */
-        .setup-screen { display: none; padding: 20px; text-align: center; flex: 1; flex-direction: column; align-items: center; background: #050506; }
-        .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; width: 100%; max-width: 400px; margin-top: 20px; }
-        .role-btn { background: #2a2a2c; border: 1px solid #444; color: white; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        .role-btn.taken { border-color: #ff0000; color: #777; background: #111; }
-
-        /* --- 遊戲主畫面 --- */
+        /* --- 介面層級 --- */
+        .lobby-screen, .setup-screen { position: fixed; inset: 0; background: radial-gradient(circle, #1a1a1c 0%, #050506 100%); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .game-screen { display: none; flex-direction: column; height: 100dvh; }
-        .header-panel { padding: 8px; background: #000; border-bottom: 1px solid #333; text-align: center; }
-        .info-row { display: flex; justify-content: center; gap: 8px; align-items: center; margin-bottom: 4px; }
-        .tag { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 900; }
+
+        /* 大廳元件 */
+        .lobby-card { background: #111; padding: 25px; border-radius: 15px; border: 1px solid var(--gold); width: 100%; max-width: 350px; text-align: center; box-shadow: 0 0 20px rgba(212, 175, 55, 0.2); }
+        input { width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: white; font-size: 1rem; text-align: center; }
+        .primary-btn { width: 100%; padding: 14px; background: var(--gold); border: none; border-radius: 8px; font-weight: 900; cursor: pointer; color: black; margin-top: 10px; font-size: 1rem; transition: 0.2s; }
+        .primary-btn:active { transform: scale(0.95); background: #fff; }
+        .secondary-btn { width: 100%; padding: 10px; background: transparent; border: 1px solid #666; color: #aaa; border-radius: 8px; margin-top: 10px; cursor: pointer; }
+
+        /* 角色選擇 */
+        .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 400px; margin-top: 15px; }
+        .role-btn { background: #2a2a2c; border: 1px solid #444; color: white; padding: 15px; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .role-btn.taken { border-color: #ff0000; color: #777; background: #111; opacity: 0.5; }
+        .role-btn.me { border-color: var(--gold); background: rgba(212, 175, 55, 0.2); }
+
+        /* 遊戲頂部面板 */
+        .header-panel { padding: 10px; background: #000; border-bottom: 1px solid #333; text-align: center; }
+        .info-row { display: flex; justify-content: space-between; align-items: center; padding: 0 10px; margin-bottom: 5px; }
+        .tag { font-size: 0.7rem; padding: 3px 10px; border-radius: 20px; font-weight: 900; }
         .tag-gold { background: var(--gold); color: black; }
-        .tag-dark { background: #333; color: #fff; }
+        .tag-dark { background: #222; color: #888; border: 1px solid #444; }
         
-        #target-display { font-family: 'Cinzel'; font-size: 2.5rem; color: var(--gold); height: 2.8rem; display: flex; align-items: center; justify-content: center; }
-        .sequence-bar { font-size: 0.55rem; color: #888; background: #111; padding: 5px; border-radius: 20px; margin: 4px auto; width: 95%; display: flex; justify-content: center; gap: 5px; }
-        .seq-item.active { color: var(--gold); font-weight: 900; transform: scale(1.1); }
+        #target-display { font-family: 'Cinzel'; font-size: 3rem; color: var(--gold); height: 3.5rem; text-shadow: 0 0 10px var(--gold); }
+        .sequence-bar { font-size: 0.6rem; color: #666; background: #111; padding: 6px; border-radius: 20px; margin: 5px auto; width: 95%; display: flex; justify-content: center; gap: 8px; border: 1px solid #222; }
+        .seq-item.active { color: var(--gold); font-weight: 900; text-decoration: underline; }
 
-        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 8px; }
-        .p-box { background: rgba(255,255,255,0.05); border: 1px solid #333; border-radius: 10px; padding: 6px; height: 80px; text-align: center; transition: 0.3s; }
-        .p-box.active { border-color: var(--gold); background: rgba(212, 175, 55, 0.15); }
-        .p-box.dead { opacity: 0.2; filter: grayscale(1); }
+        /* 玩家網格 */
+        .player-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 10px; }
+        .p-box { background: rgba(255,255,255,0.03); border: 2px solid #333; border-radius: 12px; padding: 8px; text-align: center; transition: 0.4s; position: relative; }
+        .p-box.active { border-color: var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.3); background: rgba(212, 175, 55, 0.05); }
+        .p-box.dead { opacity: 0.2; filter: grayscale(1); border-color: #ff0000; }
+        .p-emoji { font-size: 1.8rem; margin-bottom: 2px; }
+        .p-name { font-size: 0.8rem; font-weight: 900; }
+        .p-stats { font-size: 0.65rem; color: #ff4444; font-family: 'Cinzel'; }
 
-        /* 手牌區 */
-        #hand-area { background: #111; padding: 10px; border-radius: 20px 20px 0 0; flex: 1; display: flex; flex-direction: column; min-height: 0; }
-        .card-scroll { display: flex; overflow-x: auto; gap: 8px; padding: 10px 5px; flex: 1; align-items: center; }
-        .card { flex: 0 0 62px; height: 90px; background: white; color: black; border-radius: 8px; padding: 5px; display: flex; flex-direction: column; justify-content: space-between; font-weight: 900; border: 2px solid transparent; }
+        /* 卡牌設計 */
+        #hand-area { background: #0a0a0b; padding: 15px; border-radius: 25px 25px 0 0; flex: 1; display: flex; flex-direction: column; border-top: 1px solid #333; }
+        .card-scroll { display: flex; overflow-x: auto; gap: 10px; padding: 15px 5px; flex: 1; align-items: center; scrollbar-width: none; }
+        .card { flex: 0 0 70px; height: 105px; background: #fff; color: #000; border-radius: 8px; padding: 6px; display: flex; flex-direction: column; justify-content: space-between; font-weight: 900; position: relative; transition: 0.3s; border: 2px solid transparent; user-select: none; }
         .card.red { color: #d40000; }
-        .card.selected { border-color: var(--gold); transform: translateY(-10px); box-shadow: 0 0 10px var(--gold); }
-        
-        .btn-group { display: flex; gap: 8px; padding: 5px 0; }
-        .action-btn { flex: 1; padding: 14px; border-radius: 12px; border: none; font-weight: 900; font-size: 1rem; cursor: pointer; }
-        .btn-play { background: var(--gold); color: black; }
-        .btn-liar { background: var(--crimson); color: white; }
-        .host-panel { background: #222; padding: 10px; border-top: 1px solid #444; display: none; }
+        .card.selected { transform: translateY(-15px); border-color: var(--gold); box-shadow: 0 0 15px var(--gold); }
+        .card.devil { border: 3px solid #ff0000; box-shadow: 0 0 20px #ff0000; animation: devil-pulse 1s infinite alternate; }
+        @keyframes devil-pulse { from { box-shadow: 0 0 5px #ff0000; } to { box-shadow: 0 0 25px #ff0000; } }
 
-        /* 動畫 */
-        #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; }
+        .btn-group { display: flex; gap: 10px; padding: 10px 0; }
+        .action-btn { flex: 1; padding: 16px; border-radius: 12px; border: none; font-weight: 900; font-size: 1.1rem; cursor: pointer; color: #fff; }
+        .btn-play { background: var(--gold); color: black; }
+        .btn-liar { background: var(--crimson); }
+        .btn-disabled { opacity: 0.3; pointer-events: none; }
+
+        /* 處決動畫 */
+        #execution-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .blood-vignette { position: absolute; inset: 0; background: radial-gradient(circle, transparent 30%, rgba(139,0,0,0.9) 100%); opacity: 0; transition: 0.2s; pointer-events: none; }
+        .aim-ui { width: 150px; height: 150px; border: 2px solid red; border-radius: 50%; position: relative; animation: aim-pulse 0.5s infinite; }
+        .aim-ui::after, .aim-ui::before { content: ''; position: absolute; background: red; }
+        .aim-ui::after { width: 100%; height: 2px; top: 50%; left: 0; }
+        .aim-ui::before { height: 100%; width: 2px; left: 50%; top: 0; }
+        @keyframes aim-pulse { from { transform: scale(1); } to { transform: scale(1.1); } }
+        
+        .reset-panel { display: flex; gap: 5px; margin-top: 5px; }
+        .mini-btn { flex: 1; background: #222; border: 1px solid #444; color: #888; font-size: 0.6rem; padding: 5px; border-radius: 4px; }
     </style>
 </head>
 <body>
 
-    <!-- 第一層：大廳（創建/加入房間） -->
+    <!-- 1. 大廳 -->
     <div id="lobby-screen" class="lobby-screen">
-        <h1 style="color:var(--gold); font-family:'Cinzel';">LIAR'S BAR</h1>
+        <h1 style="color:var(--gold); font-family:'Cinzel'; margin-bottom:10px; font-size:2.5rem;">LIAR'S BAR</h1>
         <div class="lobby-card">
             <input type="text" id="input-room-id" placeholder="房間號碼 (中英文)">
-            <input type="password" id="input-room-pw" placeholder="房間密碼 (4位數字)" maxlength="4">
+            <input type="password" id="input-room-pw" placeholder="4位數密碼" maxlength="4">
             <button class="primary-btn" onclick="handleRoomAction('join')">進入房間</button>
-            <button class="secondary-btn" onclick="handleRoomAction('create')">創建新房間</button>
+            <button class="primary-btn" style="background:#222; color:#var(--gold); border:1px solid var(--gold);" onclick="handleRoomAction('create')">創建房間</button>
         </div>
     </div>
 
-    <!-- 第二層：角色選擇 -->
-    <div id="setup-screen" class="setup-screen">
-        <h2 id="display-room-info" style="color:var(--gold); font-size: 1rem;">房間：--</h2>
+    <!-- 2. 角色選擇 -->
+    <div id="setup-screen" class="setup-screen" style="display:none;">
+        <h2 id="setup-title" style="color:var(--gold); margin-bottom:5px;">準備進入房間</h2>
         <div id="role-grid" class="role-grid"></div>
-        <p style="color:#888; margin-top:15px;">請選擇角色以準備就緒</p>
-        <button class="secondary-btn" style="max-width:200px" onclick="location.reload()">⬅ 返回大廳</button>
+        <p style="color:#666; font-size:0.8rem; margin-top:15px;">※ 角色不能重複選擇</p>
+        <button class="primary-btn" id="start-trigger-btn" style="display:none; max-width:300px; background:#fff;" onclick="masterAction()">🎲 隨機開局 (跑馬燈)</button>
+        <button class="secondary-btn" style="max-width:200px;" onclick="location.reload()">⬅ 返回大廳</button>
     </div>
 
-    <!-- 第三層：遊戲畫面 -->
+    <!-- 3. 遊戲畫面 -->
     <div id="game-screen" class="game-screen">
         <div class="header-panel">
             <div class="info-row">
-                <div id="my-id-label" class="tag tag-gold">載入中...</div>
-                <div id="room-tag" class="tag tag-dark">房間: --</div>
+                <div id="my-id-label" class="tag tag-gold">狐狸</div>
+                <div id="room-tag" class="tag tag-dark">ROOM: --</div>
             </div>
             <div id="target-display">?</div>
-            <div class="sequence-bar" id="sequence-bar">等待房主開始...</div>
+            <div class="sequence-bar" id="sequence-bar">等待開局...</div>
+            <div class="reset-panel">
+                <button class="mini-btn" onclick="confirmReset('GAME')">🔄 重新開局</button>
+                <button class="mini-btn" onclick="confirmReset('DEAL')">🃏 重新發牌</button>
+            </div>
         </div>
 
         <div class="player-grid" id="player-grid"></div>
-        <div id="sys-msg" style="text-align:center; font-size:0.7rem; color:#888; margin:2px;">系統訊息</div>
+        <div id="sys-msg" style="text-align:center; font-size:0.7rem; color:#aaa; height:1rem;">系統訊息...</div>
 
         <div id="hand-area">
-            <div id="stack-msg" style="text-align:center; color:var(--gold); font-size:0.8rem; font-weight:bold;">上家出了 0 張牌</div>
+            <div id="stack-msg" style="text-align:center; color:var(--gold); font-size:0.85rem; font-weight:bold; margin-bottom:5px;">上家出了 0 張牌</div>
             <div class="card-scroll" id="my-hand"></div>
             <div class="btn-group">
                 <button id="btn-liar" class="action-btn btn-liar" onclick="callLiar()">LIAR!</button>
                 <button id="btn-play" class="action-btn btn-play" onclick="playCards()">出牌 (0)</button>
             </div>
-            <!-- 房主控制面板 -->
-            <div id="host-panel" class="host-panel">
-                <button class="primary-btn" style="margin:0; background:#fff;" onclick="masterAction()">🎲 房主：洗牌並開始回合</button>
-            </div>
         </div>
     </div>
 
-    <!-- 處決動畫 -->
+    <!-- 4. 處決動畫層 -->
     <div id="execution-overlay">
-        <div id="exe-avatar" style="font-size: 6rem;"></div>
-        <div id="exe-status" style="font-family:'Cinzel'; font-size: 2rem; margin-top: 20px;">TARGETING...</div>
+        <div class="blood-vignette" id="blood-vignette"></div>
+        <div id="exe-avatar" style="font-size: 7rem; margin-bottom: 20px;">🦊</div>
+        <div class="aim-ui"></div>
+        <div id="exe-status" style="font-family:'Cinzel'; font-size: 2rem; margin-top: 30px; font-weight:900;">TARGETING...</div>
     </div>
 
     <script>
@@ -134,39 +155,41 @@
             { id: 2, name: "樹懶", emoji: "🦥" }, { id: 3, name: "斑馬", emoji: "🦓" },
             { id: 4, name: "熊熊", emoji: "🐻" }, { id: 5, name: "野狼", emoji: "🐺" }
         ];
-
+        const SUITS = ['♠','♥','♦','♣'];
+        
         let currentRoomId = null;
         let myIdx = null;
-        let isHost = false;
-        let selectedIndices = [];
         let roomRef = null;
+        let selectedIndices = [];
+        let isAnimating = false;
 
-        // --- 1. 房間邏輯 ---
+        // --- 音效系統 ---
+        const audio = {
+            liar: () => playTone(600, 0.3),
+            shot: () => playGunshot(),
+            safe: () => playTone(400, 0.1),
+            click: () => playTone(800, 0.05)
+        };
+
+        // --- 房間進入邏輯 ---
         function handleRoomAction(action) {
             const rid = document.getElementById('input-room-id').value.trim();
             const rpw = document.getElementById('input-room-pw').value.trim();
-
-            if (!rid || rpw.length !== 4 || isNaN(rpw)) {
-                alert("請輸入房間號與4位數字密碼！");
-                return;
-            }
+            if (!rid || rpw.length !== 4) { alert("請輸入房間號與4位密碼"); return; }
 
             const ref = db.ref('rooms/' + rid);
             ref.once('value', snap => {
                 const data = snap.val();
                 if (action === 'create') {
-                    if (data) { alert("房間號已存在！"); return; }
-                    // 創建房間
+                    if (data) { alert("房間號已存在"); return; }
                     ref.set({
-                        password: rpw,
-                        state: 'WAITING_JOIN',
-                        hostIdx: -1, // 暫定，第一個選角色的人當房主
-                        players: ROLES.map(r => ({ ...r, isJoined: false, isDead: true, hand: [], chamber: [], bulletIdx: 0 })),
-                        targetCard: '?', currentTurn: -1, lastPlayer: -1, log: '房間已建立'
+                        password: rpw, state: 'LOBBY', hostIdx: -1,
+                        players: ROLES.map(r => ({ ...r, isJoined: false, isDead: true, chamber: [], bulletIdx: 0, hand: [] })),
+                        targetCard: '?', currentTurn: -1, starterIdx: -1, lastPlayer: -1, lastPlayed: []
                     }).then(() => enterSetup(rid));
                 } else {
-                    if (!data) { alert("找不到該房間！"); return; }
-                    if (data.password !== rpw) { alert("密碼錯誤！"); return; }
+                    if (!data) { alert("找不到房間"); return; }
+                    if (data.password !== rpw) { alert("密碼錯誤"); return; }
                     enterSetup(rid);
                 }
             });
@@ -177,10 +200,8 @@
             roomRef = db.ref('rooms/' + rid);
             document.getElementById('lobby-screen').style.display = 'none';
             document.getElementById('setup-screen').style.display = 'flex';
-            document.getElementById('display-room-info').innerText = `房間：${rid}`;
-            document.getElementById('room-tag').innerText = `房間: ${rid}`;
+            document.getElementById('room-tag').innerText = `ROOM: ${rid}`;
             
-            // 開始監聽房間數據
             roomRef.on('value', snap => {
                 const data = snap.val();
                 if(!data) return;
@@ -194,119 +215,155 @@
             grid.innerHTML = '';
             data.players.forEach((p, i) => {
                 const btn = document.createElement('button');
-                btn.className = `role-btn ${p.isJoined ? 'taken' : ''}`;
+                btn.className = `role-btn ${p.isJoined ? 'taken' : ''} ${myIdx === i ? 'me' : ''}`;
                 btn.disabled = (p.isJoined || myIdx !== null);
-                btn.innerText = p.isJoined ? `${p.emoji} ${p.name}\n(已佔用)` : `${p.emoji} ${p.name}`;
+                btn.innerText = p.isJoined ? `${p.emoji}\n(佔用)` : `${p.emoji}\n${p.name}`;
                 btn.onclick = () => tryJoin(i);
                 grid.appendChild(btn);
             });
+            
+            // 如果我已經在房間內，顯示開始按鈕
+            const joinedCount = data.players.filter(p => p.isJoined).length;
+            document.getElementById('start-trigger-btn').style.display = (myIdx !== null && joinedCount >= 2) ? 'block' : 'none';
         }
 
         function tryJoin(idx) {
-            roomRef.child('players').child(idx).transaction((p) => {
+            roomRef.child('players').child(idx).transaction(p => {
                 if (p && p.isJoined) return;
                 return { ...p, isJoined: true, isDead: false };
             }, (err, committed) => {
                 if (committed) {
                     myIdx = idx;
-                    // 如果房間還沒有房主，我就是房主
-                    roomRef.once('value', s => {
-                        if(s.val().hostIdx === -1) {
-                            roomRef.child('hostIdx').set(myIdx);
-                            isHost = true;
-                        }
-                    });
-                    
-                    document.getElementById('my-id-label').innerText = `身分：${ROLES[idx].emoji}${ROLES[idx].name}`;
-                    document.getElementById('setup-screen').style.display = 'none';
-                    document.getElementById('game-screen').style.display = 'flex';
-                    
-                    // 斷線處理
+                    document.getElementById('my-id-label').innerText = ROLES[idx].emoji + ROLES[idx].name;
                     roomRef.child('players').child(idx).child('isJoined').onDisconnect().set(false);
                 }
             });
         }
 
-        // --- 2. 遊戲核心邏輯 (房主權限) ---
+        // --- 核心邏輯：跑馬燈與發牌 ---
         function masterAction() {
-            if(!isHost) return;
             roomRef.once('value', s => {
                 const data = s.val();
-                const aliveIndices = data.players.map((p,i) => (p.isJoined && !p.isDead) ? i : -1).filter(i=>i!==-1);
-                if(aliveIndices.length < 2) { alert("活著的玩家不足2人！"); return; }
+                roomRef.update({ state: 'ANIMATING', log: '系統正在隨機選定中...' });
 
-                // 洗牌邏輯 (同你之前的版本)
-                const targets = ['Q','K','A'];
-                const target = targets[Math.floor(Math.random()*3)];
-                let deck = [];
-                ['Q','K','A'].forEach(v => { for(let i=0; i<6; i++) deck.push({ v, s:['♠','♥','♦','♣'][i%4] }); });
-                for(let i=0; i<2; i++) deck.push({ v:'J', s:'🃏' });
-                deck = deck.sort(() => Math.random() - 0.5);
+                // 2秒動畫後正式開始
+                setTimeout(() => {
+                    const targets = ['Q', 'K', 'A'];
+                    const finalTarget = targets[Math.floor(Math.random()*3)];
+                    
+                    // 根據人數生成牌組 (每人5張)
+                    const joined = data.players.filter(p => p.isJoined);
+                    let deck = [];
+                    // 固定 6Q, 6K, 6A, 2J
+                    ['Q','K','A'].forEach(v => { for(let i=0; i<6; i++) deck.push({ v, s: SUITS[i%4], isDevil: false }); });
+                    for(let i=0; i<2; i++) deck.push({ v: 'J', s: '🃏', isDevil: false });
+                    
+                    // 隨機一張變魔鬼牌
+                    const devilIdx = Math.floor(Math.random() * (deck.length - 2)); // 不選Joker
+                    deck[devilIdx].isDevil = true;
+                    deck = deck.sort(() => Math.random() - 0.5);
 
-                data.players.forEach((p, i) => {
-                    if(p.isJoined && !p.isDead) {
-                        p.hand = deck.splice(0, 5);
-                        if(!p.chamber || p.chamber.length === 0) {
+                    // 隨機選一位活著的玩家起始
+                    const aliveIndices = data.players.map((p,i) => (p.isJoined && !p.isDead) ? i : -1).filter(i=>i!==-1);
+                    const finalStarter = aliveIndices[Math.floor(Math.random()*aliveIndices.length)];
+
+                    data.players.forEach((p, i) => {
+                        if(p.isJoined && !p.isDead) {
+                            p.hand = deck.splice(0, 5);
                             p.chamber = [0,0,0,0,0,0]; p.chamber[Math.floor(Math.random()*6)] = 1;
+                            p.bulletIdx = 0;
                         }
-                    }
-                });
+                    });
 
-                data.state = 'PLAYING';
-                data.targetCard = target;
-                data.currentTurn = aliveIndices[0];
-                data.lastPlayer = -1;
-                data.lastPlayed = [];
-                data.log = `房主重整戰場！Table 是 ${target}`;
-                roomRef.set(data);
+                    data.state = 'PLAYING';
+                    data.targetCard = finalTarget;
+                    data.currentTurn = finalStarter;
+                    data.starterIdx = finalStarter;
+                    data.lastPlayer = -1;
+                    data.lastPlayed = [];
+                    data.log = `由 ${ROLES[finalStarter].name} 先出牌，Table 是 ${finalTarget}`;
+                    roomRef.set(data);
+                }, 2000);
             });
         }
 
+        // --- 遊戲畫面同步 ---
         function syncGame(data) {
-            isHost = (data.hostIdx === myIdx);
-            document.getElementById('host-panel').style.display = isHost ? 'block' : 'none';
+            if(data.state === 'LOBBY') return;
+            document.getElementById('setup-screen').style.display = 'none';
+            document.getElementById('game-screen').style.display = 'flex';
+
+            // 跑馬燈動畫中
+            if(data.state === 'ANIMATING') {
+                const ani = ['Q','K','A'];
+                document.getElementById('target-display').innerText = ani[Math.floor(Date.now()/100)%3];
+                return;
+            }
+
             document.getElementById('target-display').innerText = data.targetCard;
             document.getElementById('sys-msg').innerText = data.log;
+            document.getElementById('stack-msg').innerText = `上家出了 ${data.lastPlayed ? data.lastPlayed.length : 0} 張牌`;
 
-            // 更新玩家清單
+            // 出牌順序條
+            if(data.starterIdx !== -1) {
+                let seq = [];
+                for(let i=0; i<6; i++) {
+                    let idx = (data.starterIdx + i) % 6;
+                    let p = data.players[idx];
+                    if(p.isJoined && !p.isDead) {
+                        let cls = (data.currentTurn === idx) ? "class='seq-item active'" : "class='seq-item'";
+                        seq.push(`<span ${cls}>${p.name}</span>`);
+                    }
+                }
+                document.getElementById('sequence-bar').innerHTML = seq.join(' > ');
+            }
+
+            // 玩家網格
             const grid = document.getElementById('player-grid');
             grid.innerHTML = '';
             data.players.forEach((p, i) => {
                 if(!p.isJoined) return;
                 const div = document.createElement('div');
                 div.className = `p-box ${data.currentTurn === i ? 'active' : ''} ${p.isDead ? 'dead' : ''}`;
-                div.innerHTML = `<div style="font-size:1.5rem">${p.emoji}</div><div style="font-size:0.7rem; font-weight:900;">${p.name}${data.hostIdx===i?'(房主)':''}</div>`;
+                div.innerHTML = `<div class="p-emoji">${p.emoji}</div><div class="p-name">${p.name}</div><div class="p-stats">${p.bulletIdx}/6 打出</div>`;
                 grid.appendChild(div);
             });
 
-            // 手牌顯示 (同之前)
+            // 手牌
             const me = data.players[myIdx];
             const handDiv = document.getElementById('my-hand');
             handDiv.innerHTML = '';
             if(me && me.hand && !me.isDead) {
                 me.hand.forEach((card, i) => {
                     const isSelected = selectedIndices.includes(i);
+                    const isRed = (card.s === '♥' || card.s === '♦' || card.isDevil);
                     const cDiv = document.createElement('div');
-                    cDiv.className = `card ${(card.s==='♥'||card.s==='♦')?'red':''} ${isSelected?'selected':''}`;
-                    cDiv.innerHTML = `<div>${card.v}</div><div style="align-self:center;font-size:1.2rem">${card.s}</div><div style="transform:rotate(180deg)">${card.v}</div>`;
+                    cDiv.className = `card ${isRed?'red':''} ${card.isDevil?'devil':''} ${isSelected?'selected':''}`;
+                    cDiv.innerHTML = `<div>${card.v}</div><div style="font-size:1.5rem; align-self:center;">${card.s}</div><div style="transform:rotate(180deg)">${card.v}</div>`;
                     cDiv.onclick = () => {
                         if(isSelected) selectedIndices = selectedIndices.filter(x => x !== i);
-                        else if(selectedIndices.length < 3) selectedIndices.push(i);
+                        else {
+                            if(card.isDevil && selectedIndices.length > 0) return; // 魔鬼牌只能單打
+                            if(!card.isDevil && selectedIndices.some(idx => me.hand[idx].isDevil)) return;
+                            if(selectedIndices.length < 3) selectedIndices.push(i);
+                        }
                         document.getElementById('btn-play').innerText = `出牌 (${selectedIndices.length})`;
                         syncGame(data);
-                    };
+                    }
                     handDiv.appendChild(cDiv);
                 });
             }
 
             const myTurn = (data.currentTurn === myIdx && data.state === 'PLAYING');
             document.getElementById('btn-play').disabled = !myTurn;
+            document.getElementById('btn-play').className = `action-btn btn-play ${myTurn?'':'btn-disabled'}`;
             document.getElementById('btn-liar').disabled = (!myTurn || data.lastPlayer === -1);
-            
-            if(data.shooting) runExecutionSequence(data.shooting);
+            document.getElementById('btn-liar').className = `action-btn btn-liar ${(!myTurn || data.lastPlayer === -1)?'btn-disabled':''}`;
+
+            if(data.shooting && !isAnimating) runExecutionSequence(data.shooting);
         }
 
-        // 其餘 callLiar, playCards, runExecutionSequence 等邏輯與原本相同，只需確保使用 roomRef 即可。
+        // --- 出牌與質疑 ---
         function playCards() {
             if(selectedIndices.length === 0) return;
             roomRef.once('value', s => {
@@ -324,18 +381,72 @@
         }
 
         function callLiar() {
+            audio.liar();
             roomRef.once('value', s => {
                 const data = s.val();
-                const isLie = data.lastPlayed.some(c => c.v !== data.targetCard && c.v !== 'J');
-                const vicIdx = isLie ? data.lastPlayer : myIdx;
-                const p = data.players[vicIdx];
-                const hit = p.chamber[p.bulletIdx] === 1;
-                p.bulletIdx++;
-                if(hit) p.isDead = true;
-                data.shooting = { victims: [vicIdx], results: {[vicIdx]: hit} };
-                data.log = isLie ? "🤥 抓到吹牛！" : "✅ 他說的是真話！";
+                const cards = data.lastPlayed;
+                const isLie = cards.some(c => c.v !== data.targetCard && c.v !== 'J' && !c.isDevil);
+                const hasDevil = cards.some(c => c.isDevil);
+
+                let victims = [];
+                if(hasDevil) {
+                    // 魔鬼牌模式：除了出牌者外所有人開一槍
+                    victims = data.players.map((p,i) => (p.isJoined && !p.isDead && i !== data.lastPlayer) ? i : -1).filter(i=>i!==-1);
+                } else {
+                    victims = isLie ? [data.lastPlayer] : [myIdx];
+                }
+
+                const results = {};
+                victims.forEach(v => {
+                    const p = data.players[v];
+                    const hit = p.chamber[p.bulletIdx] === 1;
+                    results[v] = hit;
+                    p.bulletIdx++;
+                    if(hit) p.isDead = true;
+                });
+
+                data.shooting = { victims, results };
+                data.log = hasDevil ? "🔥 翻開魔鬼牌！全員地獄受審！" : (isLie ? "🤥 抓到吹牛！" : "✅ 是真話！質疑者受罰");
                 roomRef.set(data);
             });
+        }
+
+        async function runExecutionSequence(shooting) {
+            isAnimating = true;
+            const overlay = document.getElementById('execution-overlay');
+            overlay.style.display = 'flex';
+
+            for(let vIdx of shooting.victims) {
+                document.getElementById('exe-avatar').innerText = ROLES[vIdx].emoji;
+                document.getElementById('exe-status').innerText = "TARGETING...";
+                document.getElementById('exe-status').style.color = "white";
+                document.getElementById('blood-vignette').style.opacity = 0;
+                
+                await new Promise(r => setTimeout(r, 1500));
+                
+                if(shooting.results[vIdx]) {
+                    audio.shot();
+                    if(navigator.vibrate) navigator.vibrate(200);
+                    document.getElementById('exe-status').innerText = "ELIMINATED";
+                    document.getElementById('exe-status').style.color = "red";
+                    document.getElementById('blood-vignette').style.opacity = 1;
+                    await new Promise(r => setTimeout(r, 1200));
+                } else {
+                    audio.safe();
+                    document.getElementById('exe-status').innerText = "SAFE";
+                    document.getElementById('exe-status').style.color = "lime";
+                    await new Promise(r => setTimeout(r, 800));
+                }
+            }
+
+            overlay.style.display = 'none';
+            isAnimating = false;
+            // 由一個玩家清理狀態並重新發牌
+            const activeJoined = (await roomRef.child('players').get()).val().filter(p => p.isJoined);
+            if(myIdx === activeJoined.findIndex(p => p.isJoined)) {
+                roomRef.child('shooting').remove();
+                setTimeout(() => masterAction(), 1000); // 開槍後自動下一輪
+            }
         }
 
         function getNextAlive(players, current) {
@@ -344,17 +455,18 @@
             return next;
         }
 
-        async function runExecutionSequence(shootingObj) {
-            const overlay = document.getElementById('execution-overlay');
-            overlay.style.display = 'flex';
-            const vIdx = shootingObj.victims[0];
-            document.getElementById('exe-avatar').innerText = ROLES[vIdx].emoji;
-            await new Promise(r => setTimeout(r, 1500));
-            document.getElementById('exe-status').innerText = shootingObj.results[vIdx] ? "BOOM! DEAD" : "CLICK... SAFE";
-            await new Promise(r => setTimeout(r, 1500));
-            overlay.style.display = 'none';
-            if(isHost) roomRef.child('shooting').remove();
+        function confirmReset(type) {
+            if(confirm(`確定要${type==='GAME'?'重新開局(回選角)':'重新發牌'}嗎？`)) {
+                if(type === 'GAME') {
+                    roomRef.update({ state: 'LOBBY', hostIdx: -1, players: ROLES.map(r => ({ ...r, isJoined: false, isDead: true })) });
+                    location.reload();
+                } else { masterAction(); }
+            }
         }
+
+        // --- 工具：音效生成 ---
+        function playTone(f, d) { try { const c=new AudioContext(); const o=c.createOscillator(); const g=c.createGain(); o.frequency.value=f; g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime+d); o.connect(g); g.connect(c.destination); o.start(); o.stop(c.currentTime+d); } catch(e){} }
+        function playGunshot() { try { const c=new AudioContext(); const b=c.createBuffer(1, c.sampleRate, c.sampleRate); const d=b.getChannelData(0); for(let i=0; i<b.length; i++) d[i]=(Math.random()*2-1)*Math.exp(-i/(c.sampleRate*0.04)); const s=c.createBufferSource(); s.buffer=b; s.connect(c.destination); s.start(); } catch(e){} }
     </script>
 </body>
 </html>
